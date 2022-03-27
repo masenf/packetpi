@@ -1,17 +1,17 @@
 ---
+- name: include ax25 playboot
+  import_playbook: site.yml
 
 - hosts: localhost
   connection: local
   gather_facts: no
   any_errors_fatal: true
   vars_prompt:
-    - name: dport
-      prompt: what is your direwolf port number (SSID)
-      default: "5"
+    - name: direwolf_mycall
+      prompt: what is your direwolf MYCALL
+      default: "MYCALL-5"
       private: no
   roles:
     - role: direwolf
       become: True
 
-- name: include ax25 playboot
-  import_playbook: site.yml
