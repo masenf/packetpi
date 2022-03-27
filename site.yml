@@ -9,11 +9,12 @@
       prompt: what is your callsign
       private: no
     - name: nralias
-      prompt: what is your netrom alias
+      prompt: what is your netrom alias (eg. LINUX or BBS)
       private: no
     - name: nrport
       prompt: what is your netrom port number
       default: "1"
+      private: no
     - name: nrpassword
       prompt: what is your netrom node password 
       private: yes

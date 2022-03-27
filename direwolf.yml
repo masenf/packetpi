@@ -8,6 +8,7 @@
     - name: dport
       prompt: what is your direwolf port number (SSID)
       default: "5"
+      private: no
   roles:
     - role: direwolf
       become: True
