@@ -17,3 +17,4 @@
 #
 roles/*
 !roles/ax25
+!roles/direwolf

@@ -1,0 +1,12 @@
+---
+- name: install direwolf packages
+  ansible.builtin.package:
+    name: direwolf
+    state: present
+- name: copy templates
+  ansible.builtin.template:
+    src: templates/direwolf.conf.j2
+    dest: /etc/direwolf.conf
+    owner: root
+    group: root
+    mode: 0644
