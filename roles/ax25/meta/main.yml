@@ -13,34 +13,34 @@ galaxy_info:
   galaxy_tags:
     - ax25
 
-  dependencies:
-    - role: devoinc.systemd_service
-      systemd_service:
-        nrattach:
-          enabled: Yes
-          exec_start: "/usr/sbin/nrattach netrom"
-          restart: "on-failure"
-          requisite: "kissattach.service"
-          after: "kissattach.service"
-          wanted_by: "multi-user.target"
-        mheard:
-          enabled: Yes
-          exec_start: "/usr/sbin/mheardd"
-          restart: "on-failure"
-          requisite: "kissattach.service"
-          after: "kissattach.service"
-          wanted_by: "multi-user.target"
-        netrom:
-          enabled: Yes
-          exec_start: "/usr/sbin/netromd -i"
-          restart: "on-failure"
-          requisite: "nrattach.service"
-          after: "nrattach.service"
-          wanted_by: "multi-user.target"
-        ax25d:
-          enabled: Yes
-          exec_start: "/usr/sbin/ax25d -l"
-          restart: "on-failure"
-          requisite: "kissattach.service"
-          after: "kissattach.service"
-          wanted_by: "multi-user.target"
+dependencies:
+  - role: devoinc.systemd_service
+    systemd_service:
+      nrattach:
+        enabled: Yes
+        exec_start: "/usr/sbin/nrattach netrom"
+        restart: "on-failure"
+        requisite: "kissattach.service"
+        after: "kissattach.service"
+        wanted_by: "multi-user.target"
+      mheard:
+        enabled: Yes
+        exec_start: "/usr/sbin/mheardd"
+        restart: "on-failure"
+        requisite: "kissattach.service"
+        after: "kissattach.service"
+        wanted_by: "multi-user.target"
+      netrom:
+        enabled: Yes
+        exec_start: "/usr/sbin/netromd -i"
+        restart: "on-failure"
+        requisite: "nrattach.service"
+        after: "nrattach.service"
+        wanted_by: "multi-user.target"
+      ax25d:
+        enabled: Yes
+        exec_start: "/usr/sbin/ax25d -l"
+        restart: "on-failure"
+        requisite: "kissattach.service"
+        after: "kissattach.service"
+        wanted_by: "multi-user.target"

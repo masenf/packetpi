@@ -1,17 +1,16 @@
 ---
-galaxy_info:
-  dependencies:
-    - role: devoinc.systemd_service
-      systemd_service:
-        direwolf:
-          enabled: Yes
-          exec_start: "/usr/bin/direwolf -c /etc/direwolf.conf -p"
-          restart: "always"
-          wanted_by: "multi-user.target"
-        kissattach:
-          enabled: Yes
-          exec_start: "/usr/sbin/kissattach $(readlink /tmp/kisstnc) ax0"
-          restart: "on-failure"
-          requisite: "direwolf.service"
-          after: "direwolf.service"
-          wanted_by: "multi-user.target"
+dependencies:
+  - role: devoinc.systemd_service
+    systemd_service:
+      direwolf:
+        enabled: Yes
+        exec_start: "/usr/bin/direwolf -c /etc/direwolf.conf -p"
+        restart: "always"
+        wanted_by: "multi-user.target"
+      kissattach:
+        enabled: Yes
+        exec_start: "/usr/sbin/kissattach $(readlink /tmp/kisstnc) ax0"
+        restart: "on-failure"
+        requisite: "direwolf.service"
+        after: "direwolf.service"
+        wanted_by: "multi-user.target"
