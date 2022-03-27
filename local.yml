@@ -15,6 +15,15 @@
         src: "{{ serialPort }}"
         dest: /dev/tnc
         state: link
+  roles:
+    - role: devoinc.systemd_service
+      become: True
+      systemd_service:
+        kissattach:
+          enabled: Yes
+          exec_start: "/usr/sbin/kissattach $(readlink /dev/tnc) ax0"
+          restart: "on-failure"
+          wanted_by: "multi-user.target"
 
 - name: include ax25 playboot
   import_playbook: site.yml

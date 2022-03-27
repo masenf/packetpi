@@ -16,18 +16,6 @@ galaxy_info:
   dependencies:
     - role: devoinc.systemd_service
       systemd_service:
-        socat:
-          enabled: Yes
-          exec_start: "/usr/bin/socat PTY,link=/dev/direwolf,raw,echo=0,wait-slave TCP4:kvm:8001"
-          restart: "always"
-          wanted_by: "multi-user.target"
-        kissattach:
-          enabled: Yes
-          exec_start: "/usr/sbin/kissattach /dev/direwolf ax0"
-          restart: "on-failure"
-          requisite: "socat.service"
-          after: "socat.service"
-          wanted_by: "multi-user.target"
         nrattach:
           enabled: Yes
           exec_start: "/usr/sbin/nrattach netrom"
