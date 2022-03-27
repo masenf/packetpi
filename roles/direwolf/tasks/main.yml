@@ -1,8 +1,22 @@
 ---
 - name: install direwolf packages
   ansible.builtin.package:
-    name: direwolf
+    name:
+      - git
+      - gcc
+      - g++
+      - make
+      - cmake
+      - libasound2-dev
+      - libudev-dev
+      - libavahi-client-dev
     state: present
+- name: Checkout direwolf dev
+  ansible.builtin.git:
+    repo: 'https://github.com/wb2osz/direwolf.git'
+    dest: /opt/direwolf
+    version: dev
+    notify: build direwolf package
 - name: copy templates
   ansible.builtin.template:
     src: templates/direwolf.conf.j2
@@ -10,3 +24,4 @@
     owner: root
     group: root
     mode: 0644
+    notify: restart direwolf
