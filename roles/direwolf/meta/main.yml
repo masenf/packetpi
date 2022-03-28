@@ -4,7 +4,8 @@ dependencies:
     systemd_service:
       direwolf:
         enabled: Yes
-        exec_start: "/usr/bin/direwolf -c /etc/direwolf.conf -p"
+        exec_start: "/usr/local/bin/direwolf -c /etc/direwolf.conf -p"
+        exec_start_post: "/usr/bin/sleep 5"
         restart: "always"
         wanted_by: "multi-user.target"
       kissattach:
