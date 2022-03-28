@@ -19,7 +19,7 @@
           wanted_by: "multi-user.target"
         kissattach:
           enabled: Yes
-          exec_start: "/usr/sbin/kissattach $(readlink /dev/tnc) ax0"
+          exec_start: "/usr/bin/env bash -c '/usr/sbin/kissattach $(readlink /dev/tnc) ax0'"
           restart: "on-failure"
           requisite: "socat.service"
           after: "socat.service"

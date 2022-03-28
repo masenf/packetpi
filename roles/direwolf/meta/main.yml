@@ -9,7 +9,8 @@ dependencies:
         wanted_by: "multi-user.target"
       kissattach:
         enabled: Yes
-        exec_start: "/usr/sbin/kissattach $(readlink /tmp/kisstnc) ax0"
+        exec_start: "/usr/bin/env bash -c '/usr/sbin/kissattach $(readlink /tmp/kisstnc) ax0'"
+        exec_start_post: "/usr/bin/sleep 5"
         restart: "on-failure"
         requisite: "direwolf.service"
         after: "direwolf.service"
