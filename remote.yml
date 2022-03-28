@@ -21,8 +21,8 @@
           enabled: Yes
           exec_start: "/usr/bin/env bash -c '/usr/sbin/kissattach $(readlink /dev/tnc) ax0'"
           restart: "on-failure"
-          requisite: "socat.service"
-          after: "socat.service"
+          requires: "socat.service"
+          after: "socat.service\nBindsTo=socat.service"
           wanted_by: "multi-user.target"
 
 - name: include ax25 playboot
