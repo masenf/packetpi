@@ -29,6 +29,8 @@ To use direwolf with a sound device (Yet to be implemented)
 ansible-playbook direwolf.yml
 ``` 
 
+To use pre-configured answers, pass `-e @my_answers.yml`.
+
 You will now have a fully operational packet node. You can connect to the netrom node app by telnetting to port 4444
 
 ```
