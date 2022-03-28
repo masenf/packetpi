@@ -2,7 +2,7 @@
 - name: build direwolf package
   ansible.builtin.script:
     cmd: build_direwolf.sh
-    notify: restart direwolf
+  notify: restart direwolf
 - name: restart direwolf
   ansible.builtin.service:
     name: direwolf

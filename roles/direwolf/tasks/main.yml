@@ -16,7 +16,7 @@
     repo: 'https://github.com/wb2osz/direwolf.git'
     dest: /opt/direwolf
     version: dev
-    notify: build direwolf package
+  notify: build direwolf package
 - name: copy templates
   ansible.builtin.template:
     src: templates/direwolf.conf.j2
@@ -24,4 +24,4 @@
     owner: root
     group: root
     mode: 0644
-    notify: restart direwolf
+  notify: restart direwolf
