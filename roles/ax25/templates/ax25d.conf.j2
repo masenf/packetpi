@@ -15,3 +15,8 @@ default * * * * * 0 - root /usr/sbin/ax25-node node
 <netrom>
 NOCALL  * * * * * * L
 default * * * * * * - root /usr/sbin/ax25-node node
+#
+# Winlink rmsgw
+[{{callsign|upper}}-10 VIA ax0]
+echo "NOCALL   * * * * * *  L"
+echo "default  * * * * * *  - rmsgw /usr/local/bin/rmsgw rmsgw -l debug -P %d %U"
