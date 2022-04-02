@@ -1,2 +1,6 @@
 ---
 # defaults file for ax25
+axports:
+  - name: ax0
+    callsign: "{{ callsign }}"
+    description: default port

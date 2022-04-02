@@ -1,4 +1,5 @@
 # /etc/ax25/axports
+# {{ ansible_managed }}
 #
 # The format of this file is:
 #
@@ -9,3 +10,7 @@
 #2	OH2BNS-9	38400	255	7	TNOS/Linux  (38400 bps)
 
 ax0     {{callsign|upper}}           1200    255     2	1k2 Packet
+
+{% for port in axports %}
+{{ port.name }}    {{ (port.callsign || callsign) | upper }}    {{ port.speed || 1200 }}    {{ port.paclen || 255 }}    {{ port.window || 2 }}    {{ port.description }}
+{% endfor %}
