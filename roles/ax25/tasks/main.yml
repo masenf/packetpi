@@ -14,19 +14,6 @@
     name: mkiss
     state: present
 
-- name: load netrom module
-  modprobe:
-    name: netrom
-    state: present
-      
-- name: load netrom module on boot
-  ansible.builtin.copy:
-    content: 'netrom'
-    dest: /etc/modules-load.d/netrom.conf
-    owner: root
-    group: root
-    mode: '0644'
-
 - name: load kiss module on boot
   ansible.builtin.copy:
     content: 'mkiss'
@@ -39,29 +26,9 @@
   ansible.builtin.package:
     name:
       - ax25-apps
-      - ax25-node
       - ax25-tools
       - socat
-      - telnet
     state: present
-
-- name: configure services
-  lineinfile:
-    path: /etc/services
-    regexp: '^node.*software$'
-    insertafter: '^# Local services'
-    line: 'node            4444/tcp                        # OH2BNS node software'
-  notify:
-    - reload inetd
-
-- name: configure inetd
-  lineinfile:
-    path: /etc/inetd.conf
-    regexp: '^node.*node$'
-    insertafter: '^#:HAM-RADIO: amateur-radio services'
-    line: node stream tcp nowait root /usr/sbin/ax25-node ax25-node
-  notify:
-    - reload inetd
 
 - name: copy templates
   ansible.builtin.template:
@@ -73,7 +40,101 @@
   loop:
     - ax25d.conf
     - axports
-    - node.conf
-    - node.perms
-    - nrbroadcast
-    - nrports
+  notify: reload ax25d
+
+- name: /dev/tnc directory
+  ansible.builtin.file:
+    path: /dev/tnc
+    state: directory
+
+- name: /dev/tnc kissattach path unit
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/kissattach@.path
+    src: kissattach@.path
+
+- name: remote tnc environment configuration directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/socat@{{ item.name }}.service.d
+    state: directory
+  loop: "{{ axports }}"
+  when: item.kissport is defined or item.direwolf is defined
+
+- name: remote tnc environment configuration
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/socat@{{ item.name }}.service.d/{{ item.name }}.conf
+    content: "[Service]\nEnvironment=\"KISS_ADDRESS=TCP4:{{ item.kisshost | d('localhost', true) }}:{{ item.kissport }}\"\n"
+  loop: "{{ axports }}"
+  when: item.kissport is defined
+
+- name: remote tnc direwolf dependency
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/socat@{{ item.name }}.service.d/{{ item.name }}.conf
+    content: "[Service]\nEnvironment=\"KISS_ADDRESS=TCP4:localhost:{{ item.direwolf[0].kissport | d('8001', true) }}\"\n\n[Unit]\nBindsTo=direwolf@{{ item.name }}.service\nAfter=direwolf@{{ item.name }}.service\n"
+  loop: "{{ axports }}"
+  when: item.direwolf is defined
+
+- name: enable remote tnc socat service
+  ansible.builtin.systemd:
+    name: socat@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  loop: "{{ axports }}"
+  when: item.kissport is defined or item.direwolf is defined
+
+- name: local tnc environment configuration directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/tnc_link@{{ item.name }}.service.d
+    state: directory
+  loop: "{{ axports }}"
+  when: item.serialPort is defined
+
+- name: local tnc environment configuration
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/tnc_link@{{ item.name }}.service.d/{{ item.name }}.conf
+    content: "[Service]\nEnvironment=\"SERIAL_PORT={{ item.serialPort }}\"\n"
+  loop: "{{ axports }}"
+  when: item.serialPort is defined
+
+- name: enable local tnc link service
+  ansible.builtin.systemd:
+    name: tnc_link@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  loop: "{{ axports }}"
+  when: item.serialPort is defined
+
+- name: enable kissattach for all ports
+  ansible.builtin.systemd:
+    name: kissattach@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  loop: "{{ axports }}"
+  notify: reload ax25d
+
+- name: enable ax25d
+  ansible.builtin.systemd:
+    name: ax25d
+    daemon_reload: yes
+    enabled: yes
+    state: started
+
+- name: dump direwolf port info
+  ansible.builtin.debug:
+    msg: "name: {{ item.name }} channels: {{ item.direwolf }}"
+  loop: "{{ axports }}"
+  when: item.direwolf is defined
+
+- name: include direwolf role
+  ansible.builtin.include_role:
+    name: direwolf
+  vars:
+    instances:
+      - name: "{{ instance.name }}"
+        channels: "{{ instance.direwolf }}"
+  loop: "{{ axports }}"
+  loop_control:
+    loop_var: instance
+  when: instance.direwolf is defined

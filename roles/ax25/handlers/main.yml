@@ -1,7 +1,9 @@
 ---
 # handlers file for ax25
 
-- name: reload inetd
+- name: reload ax25d
   ansible.builtin.service:
-    name: inetd
+    name: ax25d
+    enabled: yes
+    daemon_reload: yes
     state: restarted

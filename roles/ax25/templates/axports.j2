@@ -9,8 +9,8 @@
 #1	OH2BNS-1	1200	255	2	144.675 MHz (1200  bps)
 #2	OH2BNS-9	38400	255	7	TNOS/Linux  (38400 bps)
 
-ax0     {{callsign|upper}}           1200    255     2	1k2 Packet
+#ax0     {{callsign|upper}}           1200    255     2	1k2 Packet
 
 {% for port in axports %}
-{{ port.name }}    {{ (port.callsign || callsign) | upper }}    {{ port.speed || 1200 }}    {{ port.paclen || 255 }}    {{ port.window || 2 }}    {{ port.description }}
+{{ port.name }}    {{ (port.direwolf.mycall | d(port.callsign, true) | d(callsign, true) ) | upper }}    {{ port.direwolf.modem | d(port.speed, true) | d("1200", true) }}    {{ port.paclen | d("255", true) }}    {{ port.window | d("2", true) }}    {{ port.description | d("", true) }}
 {% endfor %}

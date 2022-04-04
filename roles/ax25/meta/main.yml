@@ -15,32 +15,36 @@ galaxy_info:
 
 dependencies:
   - role: devoinc.systemd_service
+    become: True
+    systemd_restart_disabled: False
     systemd_service:
-      nrattach:
-        enabled: Yes
-        exec_start: "/usr/sbin/nrattach netrom"
-        restart: "on-failure"
-        requires: "kissattach.service"
-        after: "kissattach.service\nBindsTo=kissattach.service"
+      tnc_link@:
+        exec_start_pre: "/usr/bin/ln -s $SERIAL_PORT /dev/tnc/%i"
+        exec_start: /usr/bin/env bash -c "while [[ -e $SERIAL_PORT ]] > /dev/null; do sleep 5; done"
+        exec_stop: "/usr/bin/rm -f /dev/tnc/%i"
+        restart: "always"
+        restart_sec: "5s"
+        wants: "kissattach@%i.service"
         wanted_by: "multi-user.target"
-      mheard:
-        enabled: Yes
-        exec_start: "/usr/sbin/mheardd"
-        restart: "on-failure"
-        requires: "kissattach.service"
-        after: "kissattach.service\nBindsTo=kissattach.service"
+      socat@:
+        exec_start: "/usr/bin/socat PTY,link=/dev/tnc/%i,raw,echo=0,wait-slave $KISS_ADDRESS"
+        exec_start_post: "/bin/sleep 2"
+        exec_stop: "/usr/bin/rm -f /dev/tnc/%i"
+        restart: "always"
+        restart_sec: "5s"
+        before: "kissattach@%i.service"
+        wants: "kissattach@%i.service"
         wanted_by: "multi-user.target"
-      netrom:
-        enabled: Yes
-        exec_start: "/usr/sbin/netromd -i"
-        restart: "on-failure"
-        requires: "nrattach.service"
-        after: "nrattach.service\nBindsTo=nrattach.service"
-        wanted_by: "multi-user.target"
+      # this service is activated by a .path unit checking /dev/tnc/%i
+      kissattach@:
+        exec_start: "/usr/bin/env bash -c '/usr/sbin/kissattach $(readlink /dev/tnc/%i) %i'"
+        exec_start_post: "/bin/sleep 2\nExecStartPost=/usr/bin/pkill ax25d -HUP"
+        before: "ax25d.service"
+        wanted_by: "ax25d.service"
+        wants: "ax25d.service"
       ax25d:
         enabled: Yes
         exec_start: "/usr/sbin/ax25d -l"
-        restart: "on-failure"
-        requires: "kissattach.service"
-        after: "kissattach.service\nBindsTo=kissattach.service"
+        restart: "always"
+        restart_sec: "10s"
         wanted_by: "multi-user.target"

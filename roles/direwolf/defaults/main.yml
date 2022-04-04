@@ -1,2 +1,11 @@
 ---
 dport: 5
+instances:
+  - name: direwolf
+    channels:
+    - adevice: plughw:1,0
+      channel: 0
+      mycall: "{{ callsign | upper }}-{{ dport }}"
+      modem: 1200
+      agwport: 8000
+      kissport: 8001

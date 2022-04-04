@@ -13,13 +13,13 @@ ConnTimeout	14400
 # Visible hostname. Will be shown at telnet login.
 #
 #HostName	vk2lid.ampr.org
-HostName	{{callsign|lower}}-{{nrport}}
+HostName        {{ nrcallsign | d('{{ callsign }}-{{ nrssid }}', true) | lower}}
 
 # Node ID.
 #
 #NodeId		#HAMLID:VK2LID-10}
 #NodeId		\033[01;31m***\033[0m
-NodeId		#{{nralias|upper}}:{{callsign|upper}}-{{nrport}}
+NodeId		#{{ nralias | upper }}:{{ nrcallsign | d('{{ callsign }}-{{ nrssid }}', true) | upper}}
 
 # ReConnect flag.
 # 

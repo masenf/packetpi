@@ -3,7 +3,16 @@
   ansible.builtin.script:
     cmd: build_direwolf.sh
   notify: restart direwolf
+- name: direwolf service enabled
+  loop: "{{ direwolf_templates.results | map(attribute='item') | map(attribute='name') | list }}"
+  ansible.builtin.systemd:
+    name: direwolf@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  notify: restart direwolf
 - name: restart direwolf
+  loop: "{{ direwolf_templates.results | selectattr('changed', 'equalto', true) | map(attribute='item') | map(attribute='name') | list }}"
   ansible.builtin.service:
-    name: direwolf
+    name: 'direwolf@{{ item }}'
     state: restarted

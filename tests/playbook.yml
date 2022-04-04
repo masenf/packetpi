@@ -1,0 +1,51 @@
+---
+- hosts: all
+  gather_facts: no
+  any_errors_fatal: true
+  vars:
+    callsign: KF7HVM
+    direwolf_mycall: "{{ callsign }}-7"
+    direwolf_mycall2: "{{ callsign }}-8"
+    nralias: BBS
+    nrssid: 9
+    nrpassword: testing
+  roles:
+    - role: ax25
+      become: True
+      axports:
+        - name: direwolf1
+          description: kiss over TCP
+          direwolf:
+            - adevice: plughw:0,1,1 plughw:0,0,0
+              channel: 0
+              mycall: "{{ direwolf_mycall }}"
+              modem: 1200
+              kissport: 8010
+        - name: direwolf2
+          callsign: "{{ direwolf_mycall2 }}"
+          direwolf:
+            - adevice: plughw:0,1,0 plughw:0,0,1
+              channel: 0
+              mycall: "{{ direwolf_mycall2 }}"
+              modem: 1200
+              kissport: 8011
+#        - name: local_tnc
+#          callsign: "{{ callsign }}"
+#          speed: 1200
+#          description: kiss over serial
+#          serialPort: /dev/USB0
+      ax25d:
+        - callsign: "{{ direwolf_mycall }}"
+          axport: direwolf1
+          user: root
+          program: /usr/sbin/node
+          program_name: ax25-node 
+      netrom:
+        - nrport: netrom
+          user: root
+          program: /usr/sbin/node
+          program_name: ax25-node 
+    - role: node
+      become: True
+      nrcallsign: KF7HVM-9
+      axport: direwolf1

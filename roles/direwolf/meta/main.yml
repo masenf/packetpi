@@ -1,18 +1,12 @@
 ---
 dependencies:
   - role: devoinc.systemd_service
+    systemd_restart_disabled: False
     systemd_service:
-      direwolf:
-        enabled: Yes
-        exec_start: "/usr/local/bin/direwolf -c /etc/direwolf.conf -p"
-        exec_start_post: "/usr/bin/sleep 5"
+      direwolf@:
+        exec_start: "/usr/local/bin/direwolf -c /etc/direwolf/%i.conf"
+        exec_start_post: "/bin/sleep 5"
         restart: "always"
+        restart_sec: "10s"
         wanted_by: "multi-user.target"
-      kissattach:
-        enabled: Yes
-        exec_start: "/usr/bin/env bash -c '/usr/sbin/kissattach $(readlink /tmp/kisstnc) ax0'"
-        exec_start_post: "/usr/bin/sleep 5"
-        restart: "on-failure"
-        requires: "direwolf.service"
-        after: "direwolf.service\nBindsTo=direwolf.service"
-        wanted_by: "multi-user.target"
+        wants: "socat@%i.service"

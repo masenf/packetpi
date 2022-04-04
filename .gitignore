@@ -18,3 +18,6 @@
 roles/*
 !roles/ax25
 !roles/direwolf
+!roles/netrom
+!roles/node
+!roles/rmsgw

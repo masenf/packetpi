@@ -8,7 +8,7 @@
 #
 #vk2lid	inet	*	qwerty	95
 #vk2lid	*	*	*	95
-{{callsign|lower}}	inet	*	{{nrpassword}}	95
+{{ nrcallsign | d('{{ callsign }}-{{ nrssid }}', true) | upper}} inet	*	{{nrpassword}}	95
 
 # VK2BBS is a bbs so it needs escape disabled.
 #

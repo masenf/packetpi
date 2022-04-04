@@ -10,6 +10,7 @@
       - libasound2-dev
       - libudev-dev
       - libavahi-client-dev
+      - alsa-utils
     state: present
 - name: Checkout direwolf dev
   ansible.builtin.git:
@@ -17,11 +18,17 @@
     dest: /opt/direwolf
     version: dev
   notify: build direwolf package
+- name: /etc/direwolf
+  ansible.builtin.file:
+    path: /etc/direwolf
+    state: directory
 - name: copy templates
   ansible.builtin.template:
     src: templates/direwolf.conf.j2
-    dest: /etc/direwolf.conf
+    dest: /etc/direwolf/{{ item.name }}.conf
     owner: root
     group: root
     mode: 0644
-  notify: restart direwolf
+  register: direwolf_templates
+  notify: direwolf service enabled
+  loop: "{{ instances }}"

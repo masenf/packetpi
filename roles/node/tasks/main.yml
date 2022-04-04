@@ -1,0 +1,95 @@
+---
+# tasks file for node
+
+- name: load netrom module
+  modprobe:
+    name: netrom
+    state: present
+      
+- name: load netrom module on boot
+  ansible.builtin.copy:
+    content: 'netrom'
+    dest: /etc/modules-load.d/netrom.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: install node dependencies
+  ansible.builtin.package:
+    name:
+      # XXX: need to build or replace node app, since it's not available in recent distros
+      # - ax25-node
+      - ax25-tools
+      - libax25-dev
+      - gcc
+      - make
+      - telnet
+      - inetutils-inetd
+    state: present
+
+- name: /opt/node
+  ansible.builtin.file:
+    path: /opt/node
+    state: directory
+
+- name: download node source
+  ansible.builtin.unarchive:
+    src: http://ftp.de.debian.org/debian/pool/main/n/node/node_0.3.2.orig.tar.gz
+    dest: /opt/node
+    remote_src: yes
+  notify: build ax25-node
+
+- name: configure services
+  lineinfile:
+    path: /etc/services
+    regexp: '^node.*software$'
+    insertafter: '^# Local services'
+    line: 'node            4444/tcp                        # OH2BNS node software'
+  notify:
+    - reload inetd
+
+- name: configure inetd
+  lineinfile:
+    path: /etc/inetd.conf
+    regexp: '^node.*node$'
+    insertafter: '^#:HAM-RADIO: amateur-radio services'
+    line: node stream tcp nowait root /usr/sbin/node ax25-node
+    create: yes
+  notify:
+    - reload inetd
+
+- name: copy templates
+  ansible.builtin.template:
+    src: templates/{{ item }}.j2
+    dest: /etc/ax25/{{ item }}
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - node.conf
+    - node.perms
+    - nrbroadcast
+    - nrports
+  notify:
+    - reload nrattach
+    - reload mheard
+    - reload netrom
+
+- name: enable nrattach
+  ansible.builtin.service:
+    name: nrattach
+    enabled: yes
+    daemon_reload: yes
+    state: started
+- name: enable mheard
+  ansible.builtin.service:
+    name: mheard
+    enabled: yes
+    daemon_reload: yes
+    state: started
+- name: enable netrom
+  ansible.builtin.service:
+    name: netrom
+    enabled: yes
+    daemon_reload: yes
+    state: started

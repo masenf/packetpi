@@ -11,8 +11,8 @@
     - name: nralias
       prompt: what is your netrom alias (eg. LINUX or BBS)
       private: no
-    - name: nrport
-      prompt: what is your netrom port number
+    - name: nrssid
+      prompt: what is your netrom SSID number
       default: "1"
       private: no
     - name: nrpassword
