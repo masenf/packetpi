@@ -39,7 +39,7 @@ dependencies:
       # this service is activated by a .path unit checking /dev/tnc/%i
       kissattach@:
         exec_start: "/usr/bin/env bash -c '/usr/sbin/kissattach $(readlink /dev/tnc/%i) %i'"
-        exec_start_post: "/bin/sleep 2\nExecStartPost=/usr/bin/pkill ax25d -HUP"
+        exec_start_post: "/bin/sleep 2\nExecStartPost=-/usr/bin/pkill ax25d -HUP"
         before: "ax25d.service"
         wanted_by: "ax25d.service"
         wants: "ax25d.service"
