@@ -19,7 +19,7 @@ dependencies:
     systemd_restart_disabled: False
     systemd_service:
       tnc_link@:
-        exec_start_pre: "/usr/bin/ln -s $SERIAL_PORT /dev/tnc/%i"
+        exec_start_pre: "/usr/bin/mkdir -p /dev/tnc\nExecStartPre=/usr/bin/ln -s $SERIAL_PORT /dev/tnc/%i"
         exec_start: /usr/bin/env bash -c "while [[ -e $SERIAL_PORT ]] > /dev/null; do sleep 5; done"
         exec_stop: "/usr/bin/rm -f /dev/tnc/%i"
         restart: "always"
@@ -27,6 +27,7 @@ dependencies:
         wants: "kissattach@%i.service"
         wanted_by: "multi-user.target"
       socat@:
+        exec_start_pre: "/usr/bin/mkdir -p /dev/tnc"
         exec_start: "/usr/bin/socat PTY,link=/dev/tnc/%i,raw,echo=0,wait-slave $KISS_ADDRESS"
         exec_start_post: "/bin/sleep 2"
         exec_stop: "/usr/bin/rm -f /dev/tnc/%i"

@@ -1,6 +1,38 @@
 ---
 # handlers file for ax25
 
+- name: enable remote tnc socat service
+  ansible.builtin.systemd:
+    name: socat@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  loop: "{{ remote_tncs.results | map(attribute='item') | map(attribute='name') | list }}"
+
+- name: enable local tnc link service
+  ansible.builtin.systemd:
+    name: tnc_link@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  loop: "{{ local_tncs.results | map(attribute='item') | map(attribute='name') | list }}"
+
+- name: enable kissattach for all ports
+  ansible.builtin.systemd:
+    name: kissattach@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  loop: "{{ axports }}"
+  notify: reload ax25d
+
+- name: enable ax25d
+  ansible.builtin.systemd:
+    name: ax25d
+    daemon_reload: yes
+    enabled: yes
+    state: started
+
 - name: reload ax25d
   ansible.builtin.service:
     name: ax25d

@@ -3,6 +3,8 @@
 set -euxo pipefail
 
 cd /opt/node/node-*
-./configure <<< "y\ny\ny\n"
+gzip -d ../node_*.diff.gz --stdout | patch -p1
+./configure
 make -j4
 make install
+gzip -d ../node_*.diff.gz --stdout | patch -p1 -R

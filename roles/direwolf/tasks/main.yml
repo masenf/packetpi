@@ -1,4 +1,7 @@
 ---
+- name: update apt package cache
+  ansible.builtin.apt:
+    update_cache: yes
 - name: install direwolf packages
   ansible.builtin.package:
     name:
@@ -32,3 +35,14 @@
   register: direwolf_templates
   notify: direwolf service enabled
   loop: "{{ instances }}"
+- name: check direwolf binary
+  ansible.builtin.stat:
+    path: /usr/local/bin/direwolf
+  register: direwolf_binary
+# have to build here to avoid dependent services being unable to start direwolf
+# since their unit enable handlers run before direwolf's build handler
+- name: build direwolf package
+  ansible.builtin.script:
+    cmd: build_direwolf.sh
+  notify: restart all direwolf
+  when: not direwolf_binary.stat.exists

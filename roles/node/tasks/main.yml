@@ -14,6 +14,10 @@
     group: root
     mode: '0644'
 
+- name: update apt package cache
+  ansible.builtin.apt:
+    update_cache: yes
+
 - name: install node dependencies
   ansible.builtin.package:
     name:
@@ -34,9 +38,15 @@
 
 - name: download node source
   ansible.builtin.unarchive:
-    src: http://ftp.de.debian.org/debian/pool/main/n/node/node_0.3.2.orig.tar.gz
+    src: https://cloudfront.debian.net/debian-archive/debian/pool/main/n/node/node_0.3.2.orig.tar.gz
     dest: /opt/node
     remote_src: yes
+  notify: build ax25-node
+
+- name: download node patch
+  ansible.builtin.get_url:
+    url: https://cloudfront.debian.net/debian-archive/debian/pool/main/n/node/node_0.3.2-7.4.diff.gz
+    dest: /opt/node
   notify: build ax25-node
 
 - name: configure services
@@ -53,7 +63,7 @@
     path: /etc/inetd.conf
     regexp: '^node.*node$'
     insertafter: '^#:HAM-RADIO: amateur-radio services'
-    line: node stream tcp nowait root /usr/sbin/node ax25-node
+    line: node stream tcp nowait root /usr/sbin/ax25-node ax25-node
     create: yes
   notify:
     - reload inetd
@@ -75,21 +85,19 @@
     - reload mheard
     - reload netrom
 
-- name: enable nrattach
-  ansible.builtin.service:
-    name: nrattach
-    enabled: yes
-    daemon_reload: yes
-    state: started
-- name: enable mheard
-  ansible.builtin.service:
-    name: mheard
-    enabled: yes
-    daemon_reload: yes
-    state: started
-- name: enable netrom
-  ansible.builtin.service:
-    name: netrom
-    enabled: yes
-    daemon_reload: yes
-    state: started
+- name: enable all services
+  ansible.builtin.debug: msg="Enabling all node/netrom related services"
+  changed_when: true
+  notify:
+    - enable nrattach
+    - enable mheard
+    - enable netrom
+
+- name: check ax25-node binary
+  ansible.builtin.stat:
+    path: /usr/sbin/ax25-node
+  register: node_binary
+- name: build ax25-node
+  ansible.builtin.script:
+    cmd: build_node.sh
+  when: not node_binary.stat.exists

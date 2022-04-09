@@ -1,6 +1,27 @@
 ---
 # handlers file for node
 
+- name: build ax25-node
+  ansible.builtin.script:
+    cmd: build_node.sh
+- name: enable nrattach
+  ansible.builtin.service:
+    name: nrattach
+    enabled: yes
+    daemon_reload: yes
+    state: started
+- name: enable mheard
+  ansible.builtin.service:
+    name: mheard
+    enabled: yes
+    daemon_reload: yes
+    state: started
+- name: enable netrom
+  ansible.builtin.service:
+    name: netrom
+    enabled: yes
+    daemon_reload: yes
+    state: started
 - name: reload inetd
   ansible.builtin.service:
     name: inetutils-inetd
@@ -24,6 +45,3 @@
     enabled: yes
     daemon_reload: yes
     state: restarted
-- name: build ax25-node
-  ansible.builtin.script:
-    cmd: build_node.sh

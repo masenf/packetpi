@@ -9,6 +9,18 @@
     nralias: BBS
     nrssid: 9
     nrpassword: testing
+  tasks:
+    - name: load snd-aloop module [TEST]
+      modprobe:
+        name: snd-aloop
+        state: present
+    - name: load snd-aloop module on boot [TEST]
+      ansible.builtin.copy:
+        content: 'snd-aloop'
+        dest: /etc/modules-load.d/snd-aloop.conf
+        owner: root
+        group: root
+        mode: '0644'
   roles:
     - role: ax25
       become: True
@@ -38,12 +50,12 @@
         - callsign: "{{ direwolf_mycall }}"
           axport: direwolf1
           user: root
-          program: /usr/sbin/node
+          program: /usr/sbin/ax25-node
           program_name: ax25-node 
       netrom:
         - nrport: netrom
           user: root
-          program: /usr/sbin/node
+          program: /usr/sbin/ax25-node
           program_name: ax25-node 
     - role: node
       become: True

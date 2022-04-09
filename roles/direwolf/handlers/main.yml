@@ -2,7 +2,7 @@
 - name: build direwolf package
   ansible.builtin.script:
     cmd: build_direwolf.sh
-  notify: restart direwolf
+  notify: restart all direwolf
 - name: direwolf service enabled
   loop: "{{ direwolf_templates.results | map(attribute='item') | map(attribute='name') | list }}"
   ansible.builtin.systemd:
@@ -16,3 +16,5 @@
   ansible.builtin.service:
     name: 'direwolf@{{ item }}'
     state: restarted
+- name: restart all direwolf
+  ansible.builtin.command: /usr/bin/systemctl restart direwolf@*
