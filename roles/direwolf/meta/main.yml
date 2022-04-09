@@ -10,3 +10,4 @@ dependencies:
         restart_sec: "10s"
         wanted_by: "multi-user.target"
         wants: "socat@%i.service"
+        user: direwolf

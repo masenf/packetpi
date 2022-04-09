@@ -2,6 +2,14 @@
 - name: update apt package cache
   ansible.builtin.apt:
     update_cache: yes
+- name: create direwolf user
+  ansible.builtin.user:
+    name: direwolf
+    groups:
+      - audio
+      - video
+      - netdev
+      - dialout
 - name: install direwolf packages
   ansible.builtin.package:
     name:
