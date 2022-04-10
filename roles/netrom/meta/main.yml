@@ -1,0 +1,48 @@
+---
+galaxy_info:
+  author: Max Lock
+  description: Provisions Linux kernel based AX.25 packet radio networking and utilities
+  license: GPL-3.0-only
+  min_ansible_version: 2.1
+
+  platforms:
+    - name: debian
+      versions:
+        - all
+
+  galaxy_tags:
+    - ax25
+
+dependencies:
+  - role: devoinc.systemd_service
+    become: True
+    systemd_service:
+      nrattach@:
+        enabled: Yes
+        exec_start_pre: "-/usr/sbin/ip link set $NETROM_DEVICE down\nExecStartPre=/usr/sbin/nrattach $NETROM_PORT\n"
+        exec_start: /usr/bin/env bash -c "while ip link show $NETROM_DEVICE | grep -E '<[^>]*UP.*>' > /dev/null; do sleep 5; done"
+        restart: "always"
+        restart_sec: 5
+        after: "kissattach@%i.service\nBindsTo=kissattach@%i.service"
+        before: "netrom.service"
+        wants: "netrom.service"
+        required_by: "netrom.service"
+        wanted_by: "kissattach@%i.service multi-user.target"
+      mheard:
+        enabled: Yes
+        exec_start: "/usr/sbin/mheardd"
+        restart: "always"
+        restart_sec: 5
+        after: "kissattach@.service"
+        wants: "netrom@.service"
+        wanted_by: "kissattach@.service multi-user.target"
+      netrom:
+        enabled: Yes
+        exec_start: "/usr/sbin/netromd -i"
+        exec_start_post: "/bin/sleep 2\nExecStartPost=-/usr/bin/pkill ax25d -HUP"
+        restart: "always"
+        restart_sec: 5
+        after: "mheard.service"
+        requires: "mheard.service"
+        before: "ax25d.service"
+        wanted_by: "kissattach@.service multi-user.target"

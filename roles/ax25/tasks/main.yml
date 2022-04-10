@@ -127,3 +127,14 @@
     msg: "name: {{ item.name }} channels: {{ item.direwolf }}"
   loop: "{{ axports }}"
   when: item.direwolf is defined
+
+- name: include netrom role
+  ansible.builtin.include_role:
+    name: netrom
+  vars:
+    nrports:
+      - "{{ instance.netrom | combine( { 'axport': instance.name } ) }}"
+  loop: "{{ axports }}"
+  loop_control:
+    loop_var: instance
+  when: instance.netrom is defined

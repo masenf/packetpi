@@ -1,7 +1,0 @@
-# /etc/ax25/nrports
-#
-# The format of this file is:
-#
-# name callsign alias paclen description
-#
-netrom {{ nrcallsign | d('{{ callsign }}-{{ nrssid }}', true) | upper}} #{{nralias|upper}} 235	Netrom node

@@ -1,6 +1,2 @@
 ---
-# defaults file for ax25
-axport: ax0
-nrssid: 1
-nrport: netrom
-nrdev: nr0
+# defaults file for node

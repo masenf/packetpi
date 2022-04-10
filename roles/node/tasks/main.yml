@@ -1,28 +1,18 @@
 ---
 # tasks file for node
-
-- name: load netrom module
-  modprobe:
-    name: netrom
-    state: present
-      
-- name: load netrom module on boot
-  ansible.builtin.copy:
-    content: 'netrom'
-    dest: /etc/modules-load.d/netrom.conf
-    owner: root
-    group: root
-    mode: '0644'
-
 - name: update apt package cache
   ansible.builtin.apt:
     update_cache: yes
 
+- name: create node user
+  ansible.builtin.user:
+    name: node
+    groups:
+      - dialout
+
 - name: install node dependencies
   ansible.builtin.package:
     name:
-      # XXX: need to build or replace node app, since it's not available in recent distros
-      # - ax25-node
       - ax25-tools
       - libax25-dev
       - gcc
@@ -63,7 +53,7 @@
     path: /etc/inetd.conf
     regexp: '^node.*node$'
     insertafter: '^#:HAM-RADIO: amateur-radio services'
-    line: node stream tcp nowait root /usr/sbin/ax25-node ax25-node
+    line: node stream tcp nowait node /usr/sbin/ax25-node ax25-node
     create: yes
   notify:
     - reload inetd
@@ -78,20 +68,6 @@
   loop:
     - node.conf
     - node.perms
-    - nrbroadcast
-    - nrports
-  notify:
-    - reload nrattach
-    - reload mheard
-    - reload netrom
-
-- name: enable all services
-  ansible.builtin.debug: msg="Enabling all node/netrom related services"
-  changed_when: true
-  notify:
-    - enable nrattach
-    - enable mheard
-    - enable netrom
 
 - name: check ax25-node binary
   ansible.builtin.stat:
@@ -101,3 +77,12 @@
   ansible.builtin.script:
     cmd: build_node.sh
   when: not node_binary.stat.exists
+- name: remove suid root for ax25-node
+  ansible.builtin.file:
+    path: /usr/sbin/ax25-node
+    mode: 0755
+- name: chown /var/ax25/node
+  ansible.builtin.file:
+    path: /var/ax25/node
+    owner: node
+    recurse: yes

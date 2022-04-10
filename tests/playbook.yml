@@ -6,8 +6,8 @@
     callsign: KF7HVM
     direwolf_mycall: "{{ callsign }}-7"
     direwolf_mycall2: "{{ callsign }}-8"
-    nralias: BBS
-    nrssid: 9
+    node_callsign: "{{ callsign }}-9"
+    nralias: "COW"
     nrpassword: testing
   tasks:
     - name: load snd-aloop module [TEST]
@@ -33,6 +33,12 @@
               mycall: "{{ direwolf_mycall }}"
               modem: 1200
               kissport: 8010
+          netrom:
+            name: netrom
+            callsign: "{{ direwolf_mycall }}"
+            alias: "{{ nralias }}"
+            dev: nr0
+            description: direwolf1 tnc port
         - name: direwolf2
           callsign: "{{ direwolf_mycall2 }}"
           direwolf:
@@ -47,17 +53,15 @@
 #          description: kiss over serial
 #          serialPort: /dev/USB0
       ax25d:
-        - callsign: "{{ direwolf_mycall }}"
+        - callsign: "{{ node_callsign }}"
           axport: direwolf1
-          user: root
+          user: node
           program: /usr/sbin/ax25-node
           program_name: ax25-node 
       netrom:
         - nrport: netrom
-          user: root
+          user: node
           program: /usr/sbin/ax25-node
           program_name: ax25-node 
     - role: node
       become: True
-      nrcallsign: KF7HVM-9
-      axport: direwolf1
