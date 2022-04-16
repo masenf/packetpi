@@ -1,0 +1,31 @@
+---
+sysop:
+  callsign: "{{ callsign }}"
+  grid: CN86MD
+  name: Winlink Sysop
+  address1: 2460 Maple St.
+  city: Longview
+  state: WA
+  county: USA
+  zip: 98632
+  email: "{{ callsign }}@winlink.org"
+  phone: 555-555-5555
+  website: http://winlink.org
+  comments: Please Update this Information
+channels:
+  - callsign: "{{ sysop.callsign }}"
+    ssid: 10
+    password: F00BAR
+    grid: "{{ sysop.grid }}"
+    frequency: 144920000
+    baud: 1200
+    power: 5
+    height: 10
+    gain: 0
+    direction: 0
+    servicecode: EMTEST
+    comment: A temporary winlink station - TEST NODE
+    banner: |
+      {{ callsign }}-{{ ssid }} {{ comment }}
+      {{ sysop.city }}, {{ sysop.state }}, {{ sysop.country }}
+    axport: ax0
