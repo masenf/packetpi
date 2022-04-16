@@ -58,6 +58,35 @@
   notify:
     - reload inetd
 
+- name: check ax25-node binary
+  ansible.builtin.stat:
+    path: /usr/sbin/ax25-node
+  register: node_binary
+
+- name: build ax25-node
+  ansible.builtin.script:
+    cmd: build_node.sh
+  when: not node_binary.stat.exists
+
+- name: remove suid root for ax25-node
+  ansible.builtin.file:
+    path: /usr/sbin/ax25-node
+    mode: 0755
+
+- name: chown /var/ax25/node
+  ansible.builtin.file:
+    path: /var/ax25/node
+    owner: node
+    recurse: yes
+    state: directory
+
+- name: /var/ax25/node/loggedin
+  ansible.builtin.file:
+    path: /var/ax25/node/loggedin
+    owner: node
+    mode: 0644
+    state: touch
+
 - name: copy templates
   ansible.builtin.template:
     src: templates/{{ item }}.j2
@@ -69,20 +98,7 @@
     - node.conf
     - node.perms
 
-- name: check ax25-node binary
-  ansible.builtin.stat:
-    path: /usr/sbin/ax25-node
-  register: node_binary
-- name: build ax25-node
-  ansible.builtin.script:
-    cmd: build_node.sh
-  when: not node_binary.stat.exists
-- name: remove suid root for ax25-node
-  ansible.builtin.file:
-    path: /usr/sbin/ax25-node
-    mode: 0755
-- name: chown /var/ax25/node
-  ansible.builtin.file:
-    path: /var/ax25/node
-    owner: node
-    recurse: yes
+- name: copy motd
+  ansible.builtin.copy:
+    content: "{{ node_motd }}"
+    dest: /etc/ax25/node.motd

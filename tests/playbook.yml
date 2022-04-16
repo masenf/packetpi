@@ -1,17 +1,54 @@
+## 
+## This playbook uses ALSA loopback device and two instances of
+#  direwolf to help test client / server applications over AX.25
+#  without radios and TNCs!
+#
+#  Servers are running on port "dw1" (MYCALL-8)
+#    * ax25-node: MYCALL-9
+#    * rmsgw: MYCALL-10
+#
+#  Clients are going out through dw2 (MYCALL)
+#
+#  After provisioning the vagrant VM with this playbook:
+#
+#  # XXX: a reboot is currently necessary for AX.25 data to be "seen"
+#
+#    * Connect to ax25-node from the client
+#        `axcall dw2 MYCALL-9`
+#    * Connect to pat from the client
+#        `sudo -u pat pat --config /etc/pat/config.MYCALL.json connect ax25:///MYCALL-10`
 ---
 - hosts: all
   gather_facts: no
   any_errors_fatal: true
   vars:
-    callsign: KF7HVM
-    direwolf_mycall: "{{ callsign }}-7"
-    direwolf_mycall2: "{{ callsign }}-8"
+    callsign: N0CALL
+    dw1_mycall: "{{ callsign }}-8"
+    dw2_mycall: "{{ callsign }}"
     node_callsign: "{{ callsign }}-9"
     nralias: "COW"
     nrpassword: testing
+    pat_callsign: "{{ callsign }}"
+    pat_password: NUNY45
+    rmsgw_callsign: "{{ callsign }}"
+    rmsgw_password: NUNY45
+    rmsgw_ssid: 10
+    rmsgw_sysop: 
+      callsign: "{{ callsign }}"
+      grid: CN86MD
+      name: Your Name
+      address1: 123 Maple St.
+      city: Longview
+      state: WA
+      country: USA
+      zip: 98632
+      email: your_email@winlink.org
+      phone: 555-555-5555
+      website: http://winlink.org
+      comments: Something about your role as operator
   tasks:
     - name: load snd-aloop module [TEST]
-      modprobe:
+      ansible.builtin.modprobe:
         name: snd-aloop
         state: present
     - name: load snd-aloop module on boot [TEST]
@@ -25,39 +62,41 @@
     - role: ax25
       become: True
       axports:
-        - name: direwolf1
-          description: kiss over TCP
+        - name: dw1
+          description: ax25 servers
+          callsign: "{{ dw1_mycall }}"
           direwolf:
             - adevice: plughw:0,1,1 plughw:0,0,0
               channel: 0
-              mycall: "{{ direwolf_mycall }}"
+              mycall: "{{ dw1_mycall }}"
               modem: 1200
               kissport: 8010
           netrom:
             name: netrom
-            callsign: "{{ direwolf_mycall }}"
+            callsign: "{{ dw1_mycall }}"
             alias: "{{ nralias }}"
             dev: nr0
-            description: direwolf1 tnc port
-        - name: direwolf2
-          callsign: "{{ direwolf_mycall2 }}"
+            description: dw1 tnc port
+        - name: dw2
+          callsign: "{{ dw2_mycall }}"
           direwolf:
             - adevice: plughw:0,1,0 plughw:0,0,1
               channel: 0
-              mycall: "{{ direwolf_mycall2 }}"
+              mycall: "{{ dw2_mycall }}"
               modem: 1200
               kissport: 8011
-#        - name: local_tnc
-#          callsign: "{{ callsign }}"
-#          speed: 1200
-#          description: kiss over serial
-#          serialPort: /dev/USB0
       ax25d:
         - callsign: "{{ node_callsign }}"
-          axport: direwolf1
+          axport: dw1
           user: node
           program: /usr/sbin/ax25-node
           program_name: ax25-node 
+        - callsign: "{{ rmsgw_callsign }}-{{ rmsgw_ssid | d('10', true) }}"
+          axport: dw1
+          user: rmsgw
+          program: /usr/local/bin/rmsgw
+          program_name: rmsgw
+          args: -l debug -P %d %U
       netrom:
         - nrport: netrom
           user: node
@@ -65,3 +104,37 @@
           program_name: ax25-node 
     - role: node
       become: True
+      node_motd: welcome to packetpi. ? for cmds
+    - role: rmsgw
+      become: True
+      sysop: "{{ rmsgw_sysop }}"
+      channels:
+        - callsign: "{{ rmsgw_callsign }}"
+          ssid: "{{ rmsgw_ssid | d('10', true) }}"
+          password: "{{ rmsgw_password }}"
+          grid: "{{ sysop.grid }}"
+          frequency: 144920000
+          baud: 1200
+          power: 5
+          height: 10
+          gain: 0
+          direction: 0
+          servicecode: EMTEST
+          comments: "{{ sysop.comments }} - TEST NODE"
+          axport: dw1
+    - role: pat
+      patports:
+        - axport: dw2
+          callsign: "{{ pat_callsign }}"
+          password: "{{ pat_password }}"
+          grid: CN86ME
+          service_codes: 
+            - PUBLIC
+            - EMTEST
+          http_addr: "0.0.0.0:8080"
+          motd: "Pat winlink"
+          connect_aliases: |
+            "{{ rmsgw_callsign }}-{{ rmsgw_ssid | d('10', true) }} AX.25": "ax25:///{{ rmsgw_callsign }}-{{ rmsgw_ssid | d('10', true) }}",
+            "telnet": "telnet://{mycall}:CMSTelnet@cms.winlink.org:8772/wl2k"
+          listen:
+            - ax25

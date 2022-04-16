@@ -1,41 +1,17 @@
 ---
 # handlers file for ax25
 
-- name: enable remote tnc socat service
-  ansible.builtin.systemd:
-    name: socat@{{ item.name }}
-    daemon_reload: yes
-    enabled: yes
-    state: started
-  loop: "{{ remote_tncs.results | map(attribute='item') | map(attribute='name') | list }}"
-
-- name: enable local tnc link service
-  ansible.builtin.systemd:
-    name: tnc_link@{{ item.name }}
-    daemon_reload: yes
-    enabled: yes
-    state: started
-  loop: "{{ local_tncs.results | map(attribute='item') | map(attribute='name') | list }}"
-
-- name: enable kissattach for all ports
-  ansible.builtin.systemd:
-    name: kissattach@{{ item.name }}
-    daemon_reload: yes
-    enabled: yes
-    state: started
-  loop: "{{ axports }}"
-  notify: reload ax25d
-
-- name: enable ax25d
-  ansible.builtin.systemd:
-    name: ax25d
-    daemon_reload: yes
-    enabled: yes
-    state: started
-
+- name: restart socat
+  ansible.builtin.service:
+    name: 'socat@{{ item }}'
+    state: restarted
+  loop: "{{ remote_tncs.results | selectattr('changed', 'equalto', true) | map(attribute='item') | map(attribute='name') | list }}"
+- name: restart tnc_link
+  ansible.builtin.service:
+    name: 'tnc_link@{{ item }}'
+    state: restarted
+  loop: "{{ local_tncs.results | selectattr('changed', 'equalto', true) | map(attribute='item') | map(attribute='name') | list }}"
 - name: reload ax25d
   ansible.builtin.service:
     name: ax25d
-    enabled: yes
-    daemon_reload: yes
     state: restarted

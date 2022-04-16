@@ -41,7 +41,6 @@
     group: root
     mode: 0644
   register: direwolf_templates
-  notify: direwolf service enabled
   loop: "{{ instances }}"
 - name: check direwolf binary
   ansible.builtin.stat:
@@ -54,3 +53,10 @@
     cmd: build_direwolf.sh
   notify: restart all direwolf
   when: not direwolf_binary.stat.exists
+- name: direwolf service enabled
+  loop: "{{ direwolf_templates.results | map(attribute='item') | map(attribute='name') | list }}"
+  ansible.builtin.systemd:
+    name: direwolf@{{ item }}
+    daemon_reload: yes
+    enabled: yes
+  notify: restart direwolf

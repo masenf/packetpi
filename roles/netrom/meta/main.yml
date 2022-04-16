@@ -16,6 +16,7 @@ galaxy_info:
 dependencies:
   - role: devoinc.systemd_service
     become: True
+    systemd_restart_disabled: False
     systemd_service:
       nrattach@:
         enabled: Yes

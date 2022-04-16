@@ -1,2 +1,3 @@
 ---
 # defaults file for node
+node_motd: Welcome to packetpi! Update `node_motd` variable to change this text.

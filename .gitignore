@@ -21,3 +21,5 @@ roles/*
 !roles/netrom
 !roles/node
 !roles/rmsgw
+# never commit the "real" one with passwords
+tests/playbook-real.yml

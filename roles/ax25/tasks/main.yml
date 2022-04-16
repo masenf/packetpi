@@ -72,6 +72,7 @@
     path: /etc/systemd/system/socat@{{ item.name }}.service.d
     state: directory
   loop: "{{ axports }}"
+  register: remote_tncs
   when: item.kissport is defined or item.direwolf is defined
 
 - name: remote tnc environment configuration
@@ -82,11 +83,9 @@
       Environment="KISS_ADDRESS=TCP4:{{ item.kisshost | d('localhost', true) }}:{{ item.kissport }}"
   loop: "{{ axports }}"
   when: item.kissport is defined
-  register: remote_tncs
-  notify: 
-    - enable local tnc link service
-    - enable kissattach for all ports
-    - enable ax25d
+  notify:
+    - restart socat
+    - reload ax25d
 
 - name: remote tnc direwolf dependency
   ansible.builtin.copy:
@@ -100,6 +99,9 @@
       After=direwolf@{{ item.name }}.service
   loop: "{{ axports }}"
   when: item.direwolf is defined
+  notify:
+    - restart socat
+    - reload ax25d
 
 - name: local tnc environment configuration directory
   ansible.builtin.file:
@@ -117,10 +119,9 @@
   loop: "{{ axports }}"
   when: item.serialPort is defined
   register: local_tncs
-  notify: 
-    - enable local tnc link service
-    - enable kissattach for all ports
-    - enable ax25d
+  notify:
+    - restart tnc_link
+    - reload ax25d
 
 - name: dump direwolf port info
   ansible.builtin.debug:
@@ -138,3 +139,35 @@
   loop_control:
     loop_var: instance
   when: instance.netrom is defined
+
+- name: enable remote tnc socat service
+  ansible.builtin.systemd:
+    name: socat@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+  loop: "{{ remote_tncs.results | map(attribute='item') | list }}"
+  when: item.kissport is defined or item.direwolf is defined
+  notify: restart socat
+
+- name: enable local tnc link service
+  ansible.builtin.systemd:
+    name: tnc_link@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+  loop: "{{ local_tncs.results | map(attribute='item') | list }}"
+  when: item.serialPort is defined
+  notify: restart tnc_link
+
+- name: enable kissattach for all ports
+  ansible.builtin.systemd:
+    name: kissattach@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+  loop: "{{ axports }}"
+  notify: reload ax25d
+
+- name: enable ax25d
+  ansible.builtin.systemd:
+    name: ax25d
+    daemon_reload: yes
+    enabled: yes

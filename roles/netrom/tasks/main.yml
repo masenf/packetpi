@@ -3,7 +3,7 @@
   ansible.builtin.apt:
     update_cache: yes
 
-- name: install node dependencies
+- name: install netrom dependencies
   ansible.builtin.package:
     name:
       - ax25-tools
@@ -55,10 +55,22 @@
     - reload nrattach
     - reload netrom
 
-- name: enable all services
-  ansible.builtin.debug: msg="Enabling all node/netrom related services"
-  changed_when: true
-  notify:
-    - enable nrattach
-    - enable mheard
-    - enable netrom
+- name: enable nrattach
+  ansible.builtin.service:
+    name: nrattach@{{ item.axport }}
+    enabled: yes
+    daemon_reload: yes
+  loop: "{{ nrports }}"
+  notify: reload nrattach
+- name: enable mheard
+  ansible.builtin.service:
+    name: mheard
+    enabled: yes
+    daemon_reload: yes
+  notify: reload mheard
+- name: enable netrom
+  ansible.builtin.service:
+    name: netrom
+    enabled: yes
+    daemon_reload: yes
+  notify: reload netrom
