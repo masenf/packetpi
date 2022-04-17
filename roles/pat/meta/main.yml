@@ -1,0 +1,14 @@
+---
+dependencies:
+  - role: devoinc.systemd_service
+    become: True
+    systemd_restart_disabled: False
+    systemd_service:
+      pat@:
+        enabled: Yes
+        exec_start: /usr/bin/pat --config $PAT_CONFIG http
+        restart: "always"
+        restart_sec: 5
+        user: pat
+        after: "kissattach@%i.service\nBindsTo=kissattach@%i.service"
+        wanted_by: "kissattach@%i.service multi-user.target"

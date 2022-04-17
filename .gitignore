@@ -20,6 +20,7 @@ roles/*
 !roles/direwolf
 !roles/netrom
 !roles/node
+!roles/pat
 !roles/rmsgw
 # never commit the "real" one with passwords
 tests/playbook-real.yml
