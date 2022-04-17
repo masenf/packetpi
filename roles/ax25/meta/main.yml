@@ -19,6 +19,7 @@ dependencies:
     systemd_restart_disabled: False
     systemd_service:
       tnc_link@:
+        enabled: no
         exec_start_pre: "/usr/bin/mkdir -p /dev/tnc\nExecStartPre=/usr/bin/ln -s $SERIAL_PORT /dev/tnc/%i"
         exec_start: /usr/bin/env bash -c "while [[ -e $SERIAL_PORT ]] > /dev/null; do sleep 5; done"
         exec_stop: "/usr/bin/rm -f /dev/tnc/%i"
@@ -27,6 +28,7 @@ dependencies:
         wants: "kissattach@%i.service"
         wanted_by: "multi-user.target"
       socat@:
+        enabled: no
         exec_start_pre: "/usr/bin/mkdir -p /dev/tnc"
         exec_start: "/usr/bin/socat PTY,link=/dev/tnc/%i,raw,echo=0,wait-slave $KISS_ADDRESS"
         exec_start_post: "/bin/sleep 2"
@@ -38,6 +40,7 @@ dependencies:
         wanted_by: "multi-user.target"
       # this service is activated by a .path unit checking /dev/tnc/%i
       kissattach@:
+        enabled: no
         exec_start: "/usr/bin/env bash -c '/usr/sbin/kissattach $(readlink /dev/tnc/%i) %i'"
         exec_start_post: "/bin/sleep 2\nExecStartPost=-/usr/bin/pkill ax25d -HUP"
         before: "ax25d.service"

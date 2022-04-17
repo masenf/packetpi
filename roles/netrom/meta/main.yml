@@ -19,7 +19,7 @@ dependencies:
     systemd_restart_disabled: False
     systemd_service:
       nrattach@:
-        enabled: Yes
+        enabled: no
         exec_start_pre: "-/usr/sbin/ip link set $NETROM_DEVICE down\nExecStartPre=/usr/sbin/nrattach $NETROM_PORT\n"
         exec_start: /usr/bin/env bash -c "while ip link show $NETROM_DEVICE | grep -E '<[^>]*UP.*>' > /dev/null; do sleep 5; done"
         restart: "always"

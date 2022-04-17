@@ -5,7 +5,7 @@ dependencies:
     systemd_restart_disabled: False
     systemd_service:
       pat@:
-        enabled: Yes
+        enabled: no
         exec_start: /usr/bin/pat --config $PAT_CONFIG http
         restart: "always"
         restart_sec: 5
