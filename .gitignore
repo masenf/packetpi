@@ -15,12 +15,10 @@
 
 # Galaxy roles
 #
-roles/*
-!roles/ax25
-!roles/direwolf
-!roles/netrom
-!roles/node
-!roles/pat
-!roles/rmsgw
+roles/devoinc.systemd_service
+
 # never commit the "real" one with passwords
 tests/playbook-real.yml
+
+# vagrant machines
+.vagrant
