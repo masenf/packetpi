@@ -1,8 +1,8 @@
 ---
 patports:
-  - axport: ax0
+  - axport: ax1
     callsign: N0CALL
-    password: F00BaR
+    password:
     grid: CN86MD
     service_codes: 
       - PUBLIC

@@ -1,5 +1,6 @@
 ---
 dependencies:
+  - role: ax25
   - role: devoinc.systemd_service
     become: True
     systemd_restart_disabled: False

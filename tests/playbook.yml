@@ -26,8 +26,11 @@
     dw1_mycall: "{{ callsign }}-8"
     dw2_mycall: "{{ callsign }}"
     node_callsign: "{{ callsign }}-9"
-    nralias: "COW"
-    nrpassword: testing
+    node_motd: welcome to packetpi. ? for cmds
+    node_axport: dw1
+    node_nrport: netrom
+    node_alias: "COW"
+    node_password: testing
     pat_callsign: "{{ callsign }}"
     pat_password: NUNY45
     rmsgw_callsign: "{{ callsign }}"
@@ -74,7 +77,7 @@
           netrom:
             name: netrom
             callsign: "{{ dw1_mycall }}"
-            alias: "{{ nralias }}"
+            alias: "{{ node_alias }}"
             dev: nr0
             description: dw1 tnc port
         - name: dw2
@@ -85,26 +88,8 @@
               mycall: "{{ dw2_mycall }}"
               modem: 1200
               kissport: 8011
-      ax25d:
-        - callsign: "{{ node_callsign }}"
-          axport: dw1
-          user: node
-          program: /usr/sbin/ax25-node
-          program_name: ax25-node 
-        - callsign: "{{ rmsgw_callsign }}-{{ rmsgw_ssid | d('10', true) }}"
-          axport: dw1
-          user: rmsgw
-          program: /usr/local/bin/rmsgw
-          program_name: rmsgw
-          args: -l debug -P %d %U
-      netrom:
-        - nrport: netrom
-          user: node
-          program: /usr/sbin/ax25-node
-          program_name: ax25-node 
     - role: node
       become: True
-      node_motd: welcome to packetpi. ? for cmds
     - role: rmsgw
       become: True
       sysop: "{{ rmsgw_sysop }}"
