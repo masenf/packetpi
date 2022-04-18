@@ -1,21 +1,23 @@
 ---
+# The following information MUST be provided or the role will
+# fail to deploy.
 sysop:
   callsign: "{{ callsign }}"
-  grid: CN86MD
-  name: Winlink Sysop
-  address1: 2460 Maple St.
-  city: Longview
-  state: WA
-  county: USA
-  zip: 98632
-  email: "{{ callsign }}@winlink.org"
-  phone: 555-555-5555
-  website: http://winlink.org
-  comments: Please Update this Information
+  grid:
+  name:
+  address1:
+  city:
+  state:
+  county:
+  zip:
+  email:
+  phone:
+  website:
+  comments:
 channels:
   - callsign: "{{ sysop.callsign }}"
     ssid: 10
-    password: F00BAR
+    password:
     grid: "{{ sysop.grid }}"
     frequency: 144920000
     baud: 1200
@@ -28,4 +30,4 @@ channels:
     banner: |
       {{ callsign }}-{{ ssid }} {{ comment }}
       {{ sysop.city }}, {{ sysop.state }}, {{ sysop.country }}
-    axport: ax0
+    axport: ax2

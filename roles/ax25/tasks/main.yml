@@ -45,16 +45,38 @@
       - socat
     state: present
 
-- name: copy templates
+- name: create ax25d.conf.d directory
+  ansible.builtin.file:
+    path: /etc/ax25/ax25d.conf.d
+    state: directory
+    mode: 0755
+
+- name: copy axports
   ansible.builtin.template:
-    src: templates/{{ item }}.j2
-    dest: /etc/ax25/{{ item }}
+    src: templates/axports.j2
+    dest: /etc/ax25/axports
     owner: root
     group: root
     mode: 0644
-  loop:
-    - ax25d.conf
-    - axports
+  notify: reload ax25d
+
+- name: copy ax25d.conf header
+  ansible.builtin.template:
+    src: templates/ax25d.conf.j2
+    dest: /etc/ax25/ax25d.conf.d/00-header.conf
+    owner: root
+    group: root
+    mode: 0644
+  # always trigger config file assembly
+  changed_when: true
+  notify: assemble ax25d.conf
+
+# assemble the file as a task, in case a previous run died before the handlers
+# could execute
+- name: assemble ax25d.conf (task)
+  ansible.builtin.assemble:
+    src: /etc/ax25/ax25d.conf.d
+    dest: /etc/ax25/ax25d.conf
   notify: reload ax25d
 
 - name: /dev/tnc directory

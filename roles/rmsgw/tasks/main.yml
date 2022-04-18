@@ -66,3 +66,8 @@
       {{ channels[0].callsign }}-{{ channels[0].ssid }} {{ channels[0].comments }}
       {{ sysop.city }}, {{ sysop.state }}, {{ sysop.country }}
     dest: /etc/rmsgw/banner
+- name: copy ax25d config
+  ansible.builtin.template:
+    src: templates/rmsgw.conf.j2
+    dest: /etc/ax25/ax25d.conf.d/rmsgw.conf
+  notify: assemble ax25d.conf

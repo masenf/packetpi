@@ -11,6 +11,11 @@
     name: 'tnc_link@{{ item }}'
     state: restarted
   loop: "{{ local_tncs.results | selectattr('changed', 'equalto', true) | map(attribute='item') | map(attribute='name') | list }}"
+- name: assemble ax25d.conf
+  ansible.builtin.assemble:
+    src: /etc/ax25/ax25d.conf.d
+    dest: /etc/ax25/ax25d.conf
+  notify: reload ax25d
 - name: reload ax25d
   ansible.builtin.service:
     name: ax25d

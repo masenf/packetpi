@@ -102,3 +102,9 @@
   ansible.builtin.copy:
     content: "{{ node_motd }}"
     dest: /etc/ax25/node.motd
+
+- name: copy ax25d config
+  ansible.builtin.template:
+    src: templates/ax25-node.conf.j2
+    dest: /etc/ax25/ax25d.conf.d/ax25-node.conf
+  notify: assemble ax25d.conf
