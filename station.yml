@@ -1,0 +1,98 @@
+# station.yml defines customizable variables
+# for use with the standard configurations
+#   not everything is required for every configuration
+---
+# Primary operator's callsign, used for winlink and
+# deriving service identifiers
+callsign: N0CALL
+# Grid is used in beacons, pat, rmsgw configuration and must be defined
+grid: CN86ME
+# variables for pat, comment or remove to disable
+patports:
+  - callsign: "{{ callsign }}"
+    password: NUNY45
+    http_addr: "0.0.0.0:8080"
+    listen:  # for p2p access on the client port
+      - ax25
+    axport: ax1
+# variables for node (BBS server), comment `node_callsign` to disable
+node_callsign: "{{ callsign }}-9"
+node_motd: welcome to packetpi. ? for help
+node_alias: "COW"
+node_password: changeme
+# variables for rmsgw (winlink gateway), comment `rmsgw_callsign` to disable
+# rmsgw_callsign: "{{ callsign }}-10"
+rmsgw_channel:
+  callsign: "{{ callsign }}"
+  ssid: 10
+  password: NUNY@45
+  frequency: 144920000
+  baud: 1200
+  power: 5
+  height: 10
+  gain: 0
+  direction: 0
+  servicecode: EMTEST
+  comments: TEST NODE
+  axport: ax2
+# IMPORTANT: register as a winlink sysop before enabling gateway
+# setup will fail if this is not filled out
+rmsgw_sysop:
+  callsign: "{{ callsign }}"
+  grid:
+  name:
+  address1:
+  address2:
+  city:
+  state:
+  country:
+  zip:
+  email:
+  phone:
+  website:
+  comments:
+
+#####
+## AX.25 Port configuration
+#####
+axports:
+  # ax0 is reserved for "just-in-time" applications and is not used here
+  
+  # Whatever is defined as ax1 will be used for client
+  # operations by default (pat - incl. p2p, aprs, axcall)
+  - name: ax1
+    description: Primary AX.25 client port
+    # Client port uses the primary callsign without SSID
+    callsign: "{{ callsign }}"
+    # If a direwolf port is defined, the application will be compiled from
+    # source and installed as a service under the given port name.
+    direwolf:
+      - channel: 0
+        # "USB PnP Sound Device" - i.e. CM108/CM119
+        adevice: plughw:Device,0
+        ptt: cm108
+        modem: 1200
+        kissport: 8010
+    # Alternatively, a serial TNC may be used:
+    # serialPort: /dev/rfcomm0
+    #   or
+    # serialPort: /dev/ttyUSB0
+    # In either case, the local device will be used by kissattach directly
+
+    # Alternatively, a network TNC may be used:
+    # kisshost: 192.168.56.12
+    # kissport: 8001
+    # In this case, socat is used to create a local serial-like FIFO from
+    # a TCP stream -- all kiss semantics are handled by kissattach / ax25
+
+  # Whatever is defined as ax2 will be used for server
+  # applications, if any are defined (node, rmsgw, netrom)
+  - name: ax2
+    description: AX.25 server programs
+    callsign: "{{ callsign }}-10"
+    direwolf:
+      - channel: 0
+        # "USB Audio CODEC" - i.e. Signalink USB, w/ Vox
+        adevice: plughw:CODEC,0
+        modem: 1200
+        kissport: 8011

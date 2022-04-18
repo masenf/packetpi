@@ -1,0 +1,34 @@
+# This playbook along with `station.yml` is used to
+# deploy ax25 client and server stacks on all reachable nodes
+#
+#  # XXX: a reboot is currently necessary for AX.25 data to be "seen"
+---
+- hosts: all
+  gather_facts: no
+  any_errors_fatal: true
+  roles:
+    - role: ax25
+      become: True
+      ax25d:
+        - callsign: "{{ node_callsign }}"
+          axport: ax2
+          user: node
+          program: /usr/sbin/ax25-node
+          program_name: ax25-node 
+        - callsign: "{{ rmsgw_callsign }}-{{ rmsgw_ssid | d('10', true) }}"
+          axport: ax2
+          user: rmsgw
+          program: /usr/local/bin/rmsgw
+          program_name: rmsgw
+          args: -l debug -P %d %U
+    - role: node
+      become: True
+      when: node_callsign
+    - role: rmsgw
+      become: True
+      sysop: "{{ rmsgw_sysop }}"
+      channels: "{{ rmsgw_channel }}"
+      when: rmsgw_channel
+    - role: pat
+      become: True
+      when: patports
