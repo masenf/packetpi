@@ -7,28 +7,17 @@
   gather_facts: no
   any_errors_fatal: true
   roles:
-    - role: ax25
-      become: True
-      ax25d:
-        - callsign: "{{ node_callsign }}"
-          axport: ax2
-          user: node
-          program: /usr/sbin/ax25-node
-          program_name: ax25-node 
-        - callsign: "{{ rmsgw_callsign }}-{{ rmsgw_ssid | d('10', true) }}"
-          axport: ax2
-          user: rmsgw
-          program: /usr/local/bin/rmsgw
-          program_name: rmsgw
-          args: -l debug -P %d %U
     - role: node
       become: True
-      when: node_callsign
+      when: node_axport or node_nrport
     - role: rmsgw
       become: True
       sysop: "{{ rmsgw_sysop }}"
-      channels: "{{ rmsgw_channel }}"
-      when: rmsgw_channel
+      channels: "{{ rmsgw_channels }}"
+      when: rmsgw_channels
+    - role: netrom
+      become: True
+      when: nrports
     - role: pat
       become: True
       when: patports

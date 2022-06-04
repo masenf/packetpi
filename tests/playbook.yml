@@ -22,33 +22,6 @@
   gather_facts: no
   any_errors_fatal: true
   vars:
-    callsign: N0CALL
-    dw1_mycall: "{{ callsign }}-8"
-    dw2_mycall: "{{ callsign }}"
-    node_callsign: "{{ callsign }}-9"
-    node_motd: welcome to packetpi. ? for cmds
-    node_axport: dw1
-    node_nrport: netrom
-    node_alias: "COW"
-    node_password: testing
-    pat_callsign: "{{ callsign }}"
-    pat_password: NUNY45
-    rmsgw_callsign: "{{ callsign }}"
-    rmsgw_password: NUNY45
-    rmsgw_ssid: 10
-    rmsgw_sysop: 
-      callsign: "{{ callsign }}"
-      grid: CN86MD
-      name: Your Name
-      address1: 123 Maple St.
-      city: Longview
-      state: WA
-      country: USA
-      zip: 98632
-      email: your_email@winlink.org
-      phone: 555-555-5555
-      website: http://winlink.org
-      comments: Something about your role as operator
   tasks:
     - name: load snd-aloop module [TEST]
       ansible.builtin.modprobe:
@@ -62,64 +35,14 @@
         group: root
         mode: '0644'
   roles:
-    - role: ax25
-      become: True
-      axports:
-        - name: dw1
-          description: ax25 servers
-          callsign: "{{ dw1_mycall }}"
-          direwolf:
-            - adevice: plughw:0,1,1 plughw:0,0,0
-              channel: 0
-              mycall: "{{ dw1_mycall }}"
-              modem: 1200
-              kissport: 8010
-          netrom:
-            name: netrom
-            callsign: "{{ dw1_mycall }}"
-            alias: "{{ node_alias }}"
-            dev: nr0
-            description: dw1 tnc port
-        - name: dw2
-          callsign: "{{ dw2_mycall }}"
-          direwolf:
-            - adevice: plughw:0,1,0 plughw:0,0,1
-              channel: 0
-              mycall: "{{ dw2_mycall }}"
-              modem: 1200
-              kissport: 8011
     - role: node
       become: True
+    - role: netrom
+      become: True
+      when: nrports
     - role: rmsgw
       become: True
       sysop: "{{ rmsgw_sysop }}"
-      channels:
-        - callsign: "{{ rmsgw_callsign }}"
-          ssid: "{{ rmsgw_ssid | d('10', true) }}"
-          password: "{{ rmsgw_password }}"
-          grid: "{{ sysop.grid }}"
-          frequency: 144920000
-          baud: 1200
-          power: 5
-          height: 10
-          gain: 0
-          direction: 0
-          servicecode: EMTEST
-          comments: "{{ sysop.comments }} - TEST NODE"
-          axport: dw1
+      channels: "{{ rmsgw_channels }}"
     - role: pat
-      patports:
-        - axport: dw2
-          callsign: "{{ pat_callsign }}"
-          password: "{{ pat_password }}"
-          grid: CN86ME
-          service_codes: 
-            - PUBLIC
-            - EMTEST
-          http_addr: "0.0.0.0:8080"
-          motd: "Pat winlink"
-          connect_aliases: |
-            "{{ rmsgw_callsign }}-{{ rmsgw_ssid | d('10', true) }} AX.25": "ax25:///{{ rmsgw_callsign }}-{{ rmsgw_ssid | d('10', true) }}",
-            "telnet": "telnet://{mycall}:CMSTelnet@cms.winlink.org:8772/wl2k"
-          listen:
-            - ax25
+      become: True

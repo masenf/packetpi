@@ -1,37 +1,39 @@
 # PacketPi
-Is an ansible configuration that provisions linux AX25 tools on a Raspberry Pi.
+Is an ansible configuration that provisions linux AX25 tools on a Raspberry Pi
+or x86 systems.
 
 # Instructions
-Boot the Raspberry Pi OS Lite image (may work on other Debian based OS) and install Ansible and Git.
-Clone this repo and edit the variables in inventory/hosts.yml, update your callsign and netrom alias
-Run the following commands on your Raspberry Pi.
+Boot the Raspberry Pi OS Lite image (may work on other Debian based OS) and
+install Ansible and Git.
+
+Clone this repo and edit the variables in [`station.yml`](./station.yml):
+* update your callsign and netrom alias
+* add configuration for desired services
+
+Run the following commands on the machine:
 
 ```
-apt-get install ansible git
+apt-get update && apt-get install ansible git
 git clone https://github.com/maxlock/packetpi
 cd packetpi
 ansible-galaxy install -r ./requirements.yml -p roles
 ```
-Now you can run Ansible, it will prompt for settings such as callsign.
+Now you can run Ansible to create a basic client-only deployment according to
+the settings in `station.yml`
 
-To use a tnc connected to a serial port run
 ```
-ansible-playbook local.yml
-``` 
-
-To use a remote kiss device over a network such as direwolf
+ansible-playbook -K -i inventory -e @station.yml basic_client.yml
 ```
-ansible-playbook remote.yml
-``` 
 
-To use direwolf with a sound device (Yet to be implemented)
+Or a full packet node and rmsgw server:
+
+
 ```
-ansible-playbook direwolf.yml
-``` 
+ansible-playbook -K -i inventory -e @station.yml services.yml
+```
 
-To use pre-configured answers, pass `-e @my_answers.yml`.
-
-You will now have a fully operational packet node. You can connect to the netrom node app by telnetting to port 4444
+You will now have a fully operational packet node. You can connect to the node
+app by telnetting to port 4444
 
 ```
 pi@raspberrypi:~ $ telnet localhost 4444

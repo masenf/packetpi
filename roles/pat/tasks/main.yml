@@ -16,6 +16,10 @@
     update_cache: yes
   when: uname_machine.stdout is match("arm.*")
   notify: restart all pat
+- name: mark pat as held
+  ansible.builtin.dpkg_selections:
+    name: pat
+    selection: hold
 - name: create pat user
   ansible.builtin.user:
     name: pat

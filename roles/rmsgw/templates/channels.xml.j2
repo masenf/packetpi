@@ -7,7 +7,7 @@
     <basecall>{{ channel.callsign }}</basecall>
     <callsign>{{ channel.callsign }}-{{ channel.ssid }}</callsign>
     <password>{{ channel.password }}</password>
-    <gridsquare>{{ channel.grid }}</gridsquare>
+    <gridsquare>{{ channel.grid | d('{{ grid }}', true) }}</gridsquare>
     <frequency>{{ channel.frequency }}</frequency>
     <mode>0</mode>
     <autoonly>0</autoonly>
@@ -18,7 +18,7 @@
     <direction>{{ channel.direction }}</direction>
     <hours>24/7</hours>
     <groupreference>1</groupreference>
-    <servicecode>{{ channel.servicecode }}</servicecode>
+    <servicecode>{{ channel.servicecode | d('PUBLIC', true) }}</servicecode>
     <statuschecker>
       /usr/local/bin/rmschanstat $type $name $callsign
     </statuschecker>

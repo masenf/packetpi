@@ -7,6 +7,7 @@
     instances:
       - name: "{{ instance.name }}"
         channels: "{{ instance.direwolf }}"
+        callsign: "{{ instance.callsign | d('{{ callsign }}', true) }}"
   loop: "{{ axports }}"
   loop_control:
     loop_var: instance

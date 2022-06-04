@@ -4,7 +4,7 @@
 ---
 # Primary operator's callsign, used for winlink and
 # deriving service identifiers
-# callsign: N0CALL
+callsign: N0CALL
 # Grid is used in beacons, pat, rmsgw configuration and must be defined
 grid: CN86ME
 # variables for pat, comment or remove to disable
@@ -20,6 +20,8 @@ node_callsign: "{{ callsign }}-9"
 node_motd: welcome to packetpi. ? for help
 node_alias: "COW"
 node_password: changeme
+node_axport: ax2
+node_nrport: nr0
 # variables for rmsgw (winlink gateway), comment `rmsgw_callsign` to disable
 # rmsgw_callsign: "{{ callsign }}-10"
 rmsgw_channels:
@@ -35,22 +37,19 @@ rmsgw_channels:
     servicecode: EMTEST
     comments: TEST NODE
     axport: ax2
-# IMPORTANT: register as a winlink sysop before enabling gateway
-# setup will fail if this is not filled out
-rmsgw_sysop:
+rmsgw_sysop: 
   callsign: "{{ callsign }}"
-  grid:
-  name:
-  address1:
-  address2:
-  city:
-  state:
-  country:
-  zip:
-  email:
-  phone:
-  website:
-  comments:
+  grid: CN86MD
+  name: Your Name
+  address1: 123 Maple St.
+  city: Longview
+  state: WA
+  country: USA
+  zip: 98632
+  email: your_email@winlink.org
+  phone: 555-555-5555
+  website: http://winlink.org
+  comments: Something about your role as operator
 
 #####
 ## AX.25 Port configuration
@@ -67,23 +66,10 @@ axports:
     # If a direwolf port is defined, the application will be compiled from
     # source and installed as a service under the given port name.
     direwolf:
-      - channel: 0
-        # "USB PnP Sound Device" - i.e. CM108/CM119
-        adevice: plughw:Device,0
-        ptt: cm108
+      - adevice: plughw:0,1,1 plughw:0,0,0
+        channel: 0
         modem: 1200
         kissport: 8010
-    # Alternatively, a serial TNC may be used:
-    # serialPort: /dev/rfcomm0
-    #   or
-    # serialPort: /dev/ttyUSB0
-    # In either case, the local device will be used by kissattach directly
-
-    # Alternatively, a network TNC may be used:
-    # kisshost: 192.168.56.12
-    # kissport: 8001
-    # In this case, socat is used to create a local serial-like FIFO from
-    # a TCP stream -- all kiss semantics are handled by kissattach / ax25
 
   # Whatever is defined as ax2 will be used for server
   # applications, if any are defined (node, rmsgw, netrom)
@@ -91,8 +77,14 @@ axports:
     description: AX.25 server programs
     callsign: "{{ callsign }}-10"
     direwolf:
-      - channel: 0
-        # "USB Audio CODEC" - i.e. Signalink USB, w/ Vox
-        adevice: plughw:CODEC,0
+      - adevice: plughw:0,1,0 plughw:0,0,1
+        channel: 0
         modem: 1200
         kissport: 8011
+nrports:
+  - name: netrom
+    callsign: "{{ callsign }}"
+    alias: "{{ node_alias }}"
+    description: "NET/ROM port"
+    axport: ax2
+    dev: nr0
