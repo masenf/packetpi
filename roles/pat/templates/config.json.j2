@@ -1,7 +1,7 @@
 {
   "mycall": "{{ item.callsign }}",
   "secure_login_password": "{{ item.password }}",
-  "locator": "{{ item.grid | d("{{ grid }}", true) }}",
+  "locator": "{{ item.grid | d(grid, true) }}",
   "service_codes": [
 {% for code in item.service_codes | d(["PUBLIC"], true) %}
     "{{ code }}"{{ "," if not loop.last else "" }}
@@ -9,10 +9,10 @@
   ],
   "http_addr": "{{ item.http_addr }}",
   "motd": [
-    "{{ item.motd | d('', true) }}"
+    "{{ item.motd | d('') }}"
   ],
   "connect_aliases": {
-    {{ item.connect_aliases | d('', true) }}
+    {{ item.connect_aliases | d('') }}
   },
   "listen": [
     {% for addr in item.listen | d([], true) %}

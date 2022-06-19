@@ -27,7 +27,8 @@
   ansible.builtin.git:
     repo: 'https://github.com/wb2osz/direwolf.git'
     dest: /opt/direwolf
-    version: dev
+    #version: dev
+    version: master
   notify: build direwolf package
 - name: /etc/direwolf
   ansible.builtin.file:

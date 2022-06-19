@@ -7,7 +7,7 @@
     <basecall>{{ channel.callsign }}</basecall>
     <callsign>{{ channel.callsign }}-{{ channel.ssid }}</callsign>
     <password>{{ channel.password }}</password>
-    <gridsquare>{{ channel.grid | d('{{ grid }}', true) }}</gridsquare>
+    <gridsquare>{{ channel.grid | d(grid, true) }}</gridsquare>
     <frequency>{{ channel.frequency }}</frequency>
     <mode>0</mode>
     <autoonly>0</autoonly>

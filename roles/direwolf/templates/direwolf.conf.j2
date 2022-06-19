@@ -3,7 +3,7 @@
 ADEVICE{{ loop.index0 }}  {{ channel.adevice }}
 CHANNEL {{ channel.channel }}
 
-MYCALL {{ channel.mycall | d('{{ item.callsign }}', true) }}
+MYCALL {{ channel.mycall | d(item.callsign, true) }}
 MODEM {{ channel.modem }}
 {% if channel.ptt is defined %}
 PTT {{ channel.ptt }}

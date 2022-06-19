@@ -11,15 +11,15 @@
 #
 # These services are generated from the `ax25d` array by the `ax25` role
 {% for service in ax25d %}
-[{{ service.callsign | d('{{ callsign }}', true) | upper }} VIA {{ service.axport }}]
+[{{ service.callsign | d(callsign, true) | upper }} VIA {{ service.axport }}]
 NOCALL  * * * * * * L
-default * * * * * 0 - {{ service.user }} {{ service.program }} {{ service.program_name | d('{{ service.program }}', true) }} {{ service.args | d('', true) }}
+default * * * * * 0 - {{ service.user }} {{ service.program }} {{ service.program_name | d(service.program, true) }} {{ service.args | d('') }}
 {% endfor %}
 #
 #
 {% for service in netrom %}
 <{{ service.nrport }}>
 NOCALL  * * * * * * L
-default * * * * * * - {{ service.user }} {{ service.program }} {{ service.program_name | d('{{ service.program }}', true) }} {{ service.args | d('', true) }}
+default * * * * * * - {{ service.user }} {{ service.program }} {{ service.program_name | d(service.program, true) }} {{ service.args | d('') }}
 {% endfor %}
 
