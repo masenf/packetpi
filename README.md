@@ -1,9 +1,11 @@
 # PacketPi
+
 Is an ansible configuration that provisions linux AX25 tools on a Raspberry Pi
 or x86 systems.
 
 # Instructions
-Boot the Raspberry Pi OS Lite image (may work on other Debian based OS) and
+
+Boot the Raspberry Pi OS Lite image or other Debian-based OS and
 install Ansible and Git.
 
 Clone this repo and edit the variables in [`station.yml`](./station.yml):
@@ -14,10 +16,11 @@ Run the following commands on the machine:
 
 ```
 apt-get update && apt-get install ansible git
-git clone https://github.com/maxlock/packetpi
+git clone https://github.com/masenf/packetpi
 cd packetpi
 ansible-galaxy install -r ./requirements.yml -p roles
 ```
+
 Now you can run Ansible to create a basic client-only deployment according to
 the settings in `station.yml`
 
@@ -25,7 +28,8 @@ the settings in `station.yml`
 ansible-playbook -K -i inventory -e @station.yml basic_client.yml
 ```
 
-Or a full packet node and rmsgw server:
+Or a full packet [node](https://manpages.org/ax25-node/8) and
+[rmsgw](https://github.com/nwdigitalradio/rmsgw) server:
 
 
 ```
