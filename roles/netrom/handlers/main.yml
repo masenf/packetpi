@@ -1,0 +1,19 @@
+---
+# handlers file for netrom
+
+- name: reload nrattach
+  ansible.builtin.service:
+    name: nrattach@{{ item.axport }}
+    daemon_reload: yes
+    state: restarted
+  loop: "{{ nrports }}"
+- name: reload mheard
+  ansible.builtin.service:
+    name: mheard
+    daemon_reload: yes
+    state: restarted
+- name: reload netrom
+  ansible.builtin.service:
+    name: netrom
+    daemon_reload: yes
+    state: restarted

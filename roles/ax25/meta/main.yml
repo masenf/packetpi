@@ -13,46 +13,42 @@ galaxy_info:
   galaxy_tags:
     - ax25
 
-  dependencies:
-    - role: devoinc.systemd_service
-      systemd_service:
-        socat:
-          enabled: Yes
-          exec_start: "/usr/bin/socat PTY,link=/dev/direwolf,raw,echo=0,wait-slave TCP4:kvm:8001"
-          restart: "always"
-          wanted_by: "multi-user.target"
-        kissattach:
-          enabled: Yes
-          exec_start: "/usr/sbin/kissattach /dev/direwolf ax0"
-          restart: "on-failure"
-          requisite: "socat.service"
-          after: "socat.service"
-          wanted_by: "multi-user.target"
-        nrattach:
-          enabled: Yes
-          exec_start: "/usr/sbin/nrattach netrom"
-          restart: "on-failure"
-          requisite: "kissattach.service"
-          after: "kissattach.service"
-          wanted_by: "multi-user.target"
-        mheard:
-          enabled: Yes
-          exec_start: "/usr/sbin/mheardd"
-          restart: "on-failure"
-          requisite: "kissattach.service"
-          after: "kissattach.service"
-          wanted_by: "multi-user.target"
-        netrom:
-          enabled: Yes
-          exec_start: "/usr/sbin/netromd -i"
-          restart: "on-failure"
-          requisite: "nrattach.service"
-          after: "nrattach.service"
-          wanted_by: "multi-user.target"
-        ax25d:
-          enabled: Yes
-          exec_start: "/usr/sbin/ax25d -l"
-          restart: "on-failure"
-          requisite: "kissattach.service"
-          after: "kissattach.service"
-          wanted_by: "multi-user.target"
+dependencies:
+  - role: devoinc.systemd_service
+    become: True
+    systemd_restart_disabled: False
+    systemd_service:
+      tnc_link@:
+        enabled: no
+        exec_start_pre: "/usr/bin/mkdir -p /dev/tnc\nExecStartPre=/usr/bin/ln -s $SERIAL_PORT /dev/tnc/%i"
+        exec_start: /usr/bin/env bash -c "while [[ -e $SERIAL_PORT ]] > /dev/null; do sleep 5; done"
+        exec_stop: "/usr/bin/rm -f /dev/tnc/%i"
+        restart: "always"
+        restart_sec: "5s"
+        wants: "kissattach@%i.service"
+        wanted_by: "multi-user.target"
+      socat@:
+        enabled: no
+        exec_start_pre: "/usr/bin/mkdir -p /dev/tnc"
+        exec_start: "/usr/bin/socat PTY,link=/dev/tnc/%i,raw,echo=0,wait-slave $KISS_ADDRESS"
+        exec_start_post: "/bin/sleep 2"
+        exec_stop: "/usr/bin/rm -f /dev/tnc/%i"
+        restart: "always"
+        restart_sec: "5s"
+        before: "kissattach@%i.service"
+        wants: "kissattach@%i.service"
+        wanted_by: "multi-user.target"
+      # this service is activated by a .path unit checking /dev/tnc/%i
+      kissattach@:
+        enabled: no
+        exec_start: "/usr/bin/env bash -c '/usr/sbin/kissattach $(readlink /dev/tnc/%i) %i'"
+        exec_start_post: "/bin/sleep 2\nExecStartPost=-/usr/bin/pkill ax25d -HUP"
+        before: "ax25d.service"
+        wanted_by: "ax25d.service"
+        wants: "ax25d.service"
+      ax25d:
+        enabled: Yes
+        exec_start: "/usr/sbin/ax25d -l"
+        restart: "always"
+        restart_sec: "10s"
+        wanted_by: "multi-user.target"

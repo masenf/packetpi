@@ -1,0 +1,33 @@
+---
+# The following information MUST be provided or the role will
+# fail to deploy.
+sysop:
+  callsign: "{{ callsign }}"
+  grid:
+  name:
+  address1:
+  city:
+  state:
+  county:
+  zip:
+  email:
+  phone:
+  website:
+  comments:
+channels:
+  - callsign: "{{ sysop.callsign }}"
+    ssid: 10
+    password:
+    grid: "{{ sysop.grid }}"
+    frequency: 144920000
+    baud: 1200
+    power: 5
+    height: 10
+    gain: 0
+    direction: 0
+    servicecode: EMTEST
+    comment: A temporary winlink station - TEST NODE
+    banner: |
+      {{ callsign }}-{{ ssid }} {{ comment }}
+      {{ sysop.city }}, {{ sysop.state }}, {{ sysop.country }}
+    axport: ax2

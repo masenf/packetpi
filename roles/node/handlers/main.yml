@@ -1,0 +1,11 @@
+---
+# handlers file for node
+
+- name: build ax25-node
+  ansible.builtin.script:
+    cmd: build_node.sh
+- name: reload inetd
+  ansible.builtin.service:
+    name: inetutils-inetd
+    enabled: yes
+    state: restarted

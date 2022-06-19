@@ -1,0 +1,9 @@
+---
+# defaults file for netrom
+nrports:
+  - name: netrom
+    callsign: "{{ callsign }}"
+    alias: LINUX
+    description: NET/ROM port
+    axport: ax2
+    dev: nr0

@@ -1,0 +1,4 @@
+---
+- name: build rmsgw package
+  ansible.builtin.script:
+    cmd: build_rmsgw.sh

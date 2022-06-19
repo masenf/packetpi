@@ -1,0 +1,76 @@
+---
+- name: update apt package cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: install netrom dependencies
+  ansible.builtin.package:
+    name:
+      - ax25-tools
+    state: present
+
+- name: load netrom module
+  modprobe:
+    name: netrom
+    state: present
+      
+- name: load netrom module on boot
+  ansible.builtin.copy:
+    content: 'netrom'
+    dest: /etc/modules-load.d/netrom.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: copy templates
+  ansible.builtin.template:
+    src: templates/{{ item }}.j2
+    dest: /etc/ax25/{{ item }}
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - nrbroadcast
+    - nrports
+  notify:
+    - reload nrattach
+    - reload mheard
+    - reload netrom
+
+- name: nrattach service config dir
+  ansible.builtin.file:
+    path: /etc/systemd/system/nrattach@{{ item.axport }}.service.d
+    state: directory
+  loop: "{{ nrports }}"
+
+- name: nrattach service config
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/nrattach@{{ item.axport }}.service.d/{{ item.axport }}.conf
+    content: |
+      [Service]
+      Environment="NETROM_DEVICE={{ item.dev }}"
+      Environment="NETROM_PORT={{ item.name }}"
+  loop: "{{ nrports }}"
+  notify: 
+    - reload nrattach
+    - reload netrom
+
+- name: enable nrattach
+  ansible.builtin.service:
+    name: nrattach@{{ item.axport }}
+    enabled: yes
+    daemon_reload: yes
+  loop: "{{ nrports }}"
+  notify: reload nrattach
+- name: enable mheard
+  ansible.builtin.service:
+    name: mheard
+    enabled: yes
+    daemon_reload: yes
+  notify: reload mheard
+- name: enable netrom
+  ansible.builtin.service:
+    name: netrom
+    enabled: yes
+    daemon_reload: yes
+  notify: reload netrom

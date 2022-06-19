@@ -1,0 +1,9 @@
+# /etc/ax25/nrports
+#
+# The format of this file is:
+#
+# name callsign alias paclen description
+#
+{% for port in nrports %}
+{{ port.name }} {{ port.callsign | upper }} #{{ port.alias | upper }} 235	{{ port.description | d("ansible nr port", true) }}
+{% endfor %}

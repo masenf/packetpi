@@ -1,0 +1,79 @@
+---
+- name: install rmsgw deps
+  ansible.builtin.package:
+    name:
+      - git
+      - gcc
+      - g++
+      - make
+      - cmake
+      - autoconf
+      - libxml2-dev
+      - libncurses5-dev
+      - xutils-dev
+    state: present
+- name: Checkout rmsgw dev
+  ansible.builtin.git:
+    repo: 'https://github.com/nwdigitalradio/rmsgw'
+    dest: /opt/rmsgw
+    version: master
+  notify: build rmsgw package
+- name: create rmsgw group
+  ansible.builtin.group:
+    name: rmsgw
+- name: create rmsgw user
+  ansible.builtin.user:
+    name: rmsgw
+    group: rmsgw
+- name: /etc/rmsgw
+  ansible.builtin.file:
+    path: /etc/rmsgw
+    state: directory
+- name: /etc/rmsgw/stat
+  ansible.builtin.file:
+    path: /etc/rmsgw/stat
+    state: directory
+    owner: rmsgw
+- name: /usr/local/etc/rmsgw
+  ansible.builtin.file:
+    path: /usr/local/etc/rmsgw
+    src: /etc/rmsgw
+    state: link
+- name: check rmsgw binary
+  ansible.builtin.stat:
+    path: /usr/local/bin/rmsgw
+  register: rmsgw_binary
+- name: trigger build rmsgw binary
+  ansible.builtin.debug:
+    msg: rebuild rmsgw because binary doesn't exist
+  changed_when: true
+  notify: build rmsgw package
+  when: not rmsgw_binary.stat.exists
+- name: copy channels.xml
+  ansible.builtin.template:
+    src: templates/channels.xml.j2
+    dest: /etc/rmsgw/channels.xml
+    owner: root
+    group: rmsgw
+    mode: 0640
+- name: copy templates
+  ansible.builtin.template:
+    src: templates/{{ item }}.j2
+    dest: /etc/rmsgw/{{ item }}
+    owner: root
+    group: rmsgw
+    mode: 0640
+  loop:
+    - sysop.xml
+    - gateway.conf
+- name: write banner
+  ansible.builtin.copy:
+    content: |
+      {{ channels[0].callsign }}-{{ channels[0].ssid }} {{ channels[0].comments }}
+      {{ sysop.city }}, {{ sysop.state }}, {{ sysop.country }}
+    dest: /etc/rmsgw/banner
+- name: copy ax25d config
+  ansible.builtin.template:
+    src: templates/rmsgw.conf.j2
+    dest: /etc/ax25/ax25d.conf.d/rmsgw.conf
+  notify: assemble ax25d.conf

@@ -1,0 +1,15 @@
+## basic_client.yml: sets up pat for the given station
+#
+#  # XXX: a reboot is currently necessary for AX.25 data to be "seen"
+#    * Connect to pat from the client
+#        `sudo -u pat pat --config /etc/pat/config.MYCALL.json connect ax25:///N0CALL-10`
+---
+- hosts: all
+  gather_facts: no
+  any_errors_fatal: true
+  roles:
+    - role: ax25
+      become: True
+      when: axports
+    - role: pat
+      when: patports

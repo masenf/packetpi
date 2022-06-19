@@ -1,0 +1,16 @@
+---
+patports:
+  - axport: ax1
+    callsign: N0CALL
+    password:
+    grid: CN86MD
+    service_codes: 
+      - PUBLIC
+      - EMTEST
+    http_addr: "0.0.0.0:8080"
+    motd: "Pat winlink"
+    connect_aliases: |
+      "N7DEM-10 144.92 AX.25": "ax25:///N7DEM-10",
+      "W7BO-10 144.92 AX.25": "ax25:///W7BO-10",
+      "telnet": "telnet://{mycall}:CMSTelnet@cms.winlink.org:8772/wl2k"
+    listen: []

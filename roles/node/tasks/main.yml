@@ -1,0 +1,110 @@
+---
+# tasks file for node
+- name: update apt package cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: create node user
+  ansible.builtin.user:
+    name: node
+    groups:
+      - dialout
+
+- name: install node dependencies
+  ansible.builtin.package:
+    name:
+      - ax25-tools
+      - libax25-dev
+      - gcc
+      - make
+      - telnet
+      - inetutils-inetd
+    state: present
+
+- name: /opt/node
+  ansible.builtin.file:
+    path: /opt/node
+    state: directory
+
+- name: download node source
+  ansible.builtin.unarchive:
+    src: https://cloudfront.debian.net/debian-archive/debian/pool/main/n/node/node_0.3.2.orig.tar.gz
+    dest: /opt/node
+    remote_src: yes
+  notify: build ax25-node
+
+- name: download node patch
+  ansible.builtin.get_url:
+    url: https://cloudfront.debian.net/debian-archive/debian/pool/main/n/node/node_0.3.2-7.4.diff.gz
+    dest: /opt/node
+  notify: build ax25-node
+
+- name: configure services
+  lineinfile:
+    path: /etc/services
+    regexp: '^node.*software$'
+    insertafter: '^# Local services'
+    line: 'node            4444/tcp                        # OH2BNS node software'
+  notify:
+    - reload inetd
+
+- name: configure inetd
+  lineinfile:
+    path: /etc/inetd.conf
+    regexp: '^node.*node$'
+    insertafter: '^#:HAM-RADIO: amateur-radio services'
+    line: node stream tcp nowait node /usr/sbin/ax25-node ax25-node
+    create: yes
+  notify:
+    - reload inetd
+
+- name: check ax25-node binary
+  ansible.builtin.stat:
+    path: /usr/sbin/ax25-node
+  register: node_binary
+
+- name: build ax25-node
+  ansible.builtin.script:
+    cmd: build_node.sh
+  when: not node_binary.stat.exists
+
+- name: remove suid root for ax25-node
+  ansible.builtin.file:
+    path: /usr/sbin/ax25-node
+    mode: 0755
+
+- name: chown /var/ax25/node
+  ansible.builtin.file:
+    path: /var/ax25/node
+    owner: node
+    recurse: yes
+    state: directory
+
+- name: /var/ax25/node/loggedin
+  ansible.builtin.file:
+    path: /var/ax25/node/loggedin
+    owner: node
+    mode: 0644
+    state: touch
+
+- name: copy templates
+  ansible.builtin.template:
+    src: templates/{{ item }}.j2
+    dest: /etc/ax25/{{ item }}
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - node.conf
+    - node.perms
+
+- name: copy motd
+  ansible.builtin.copy:
+    content: "{{ node_motd }}"
+    dest: /etc/ax25/node.motd
+
+- name: copy ax25d config
+  ansible.builtin.template:
+    src: templates/ax25-node.conf.j2
+    dest: /etc/ax25/ax25d.conf.d/ax25-node.conf
+  notify: assemble ax25d.conf

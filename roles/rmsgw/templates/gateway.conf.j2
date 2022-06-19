@@ -1,0 +1,7 @@
+GWCALL={{ channels[0].callsign }}-{{ channels[0].ssid }}
+GRIDSQUARE={{ channels[0].grid | d(grid, true) }}
+CHANNELFILE=/usr/local/etc/rmsgw/channels.xml
+BANNERFILE=/usr/local/etc/rmsgw/banner
+LOGFACILITY=LOCAL0
+LOGMASK=INFO
+PYTHON=/usr/bin/python

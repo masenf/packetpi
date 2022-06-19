@@ -6,4 +6,6 @@
 #
 #1	5	192	100	0
 #2	5	255	100	1
-ax0	5	192	100	0
+{% for port in nrports %}
+{{ port.axport }}	5	192	100	0
+{% endfor %}

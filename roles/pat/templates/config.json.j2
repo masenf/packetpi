@@ -1,0 +1,36 @@
+{
+  "mycall": "{{ item.callsign }}",
+  "secure_login_password": "{{ item.password }}",
+  "locator": "{{ item.grid | d(grid, true) }}",
+  "service_codes": [
+{% for code in item.service_codes | d(["PUBLIC"], true) %}
+    "{{ code }}"{{ "," if not loop.last else "" }}
+{% endfor %}
+  ],
+  "http_addr": "{{ item.http_addr }}",
+  "motd": [
+    "{{ item.motd | d('') }}"
+  ],
+  "connect_aliases": {
+    {{ item.connect_aliases | d('') }}
+  },
+  "listen": [
+    {% for addr in item.listen | d([], true) %}
+    "{{ addr }}"{{ "," if not loop.last else "" }}
+    {% endfor %}
+  ],
+  "ax25": {
+    "port": "{{ item.axport }}",
+    "beacon": {
+      "every": 3600,
+      "message": "Winlink P2P",
+      "destination": "IDENT"
+    },
+    "rig": ""
+  },
+  "telnet": {
+    "listen_addr": ":8774",
+    "password": ""
+  },
+  "forms_path": "/home/pat/.wl2k/Standard_Forms"
+}

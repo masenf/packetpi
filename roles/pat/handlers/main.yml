@@ -1,0 +1,9 @@
+---
+- name: restart pat
+  loop: "{{ pat_templates.results | selectattr('changed', 'equalto', true) | map(attribute='item') | map(attribute='axport') | list }}"
+  ansible.builtin.service:
+    name: 'pat@{{ item }}'
+    state: restarted
+- name: restart all pat
+  ansible.builtin.command: /usr/bin/systemctl restart pat@*
+

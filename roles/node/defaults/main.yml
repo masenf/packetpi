@@ -1,0 +1,8 @@
+---
+# defaults file for node
+node_callsign:
+node_axport:
+node_nrport:
+node_alias: "ND"
+node_password: changeme
+node_motd: Welcome to packetpi! Update `node_motd` variable to change this text.

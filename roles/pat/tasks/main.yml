@@ -1,0 +1,69 @@
+---
+- name: get architecture
+  ansible.builtin.command:
+    cmd: uname -m
+  register: uname_machine
+  changed_when: false
+- name: Update repositories cache and install "pat" package (x86_64)
+  ansible.builtin.apt:
+    deb: https://github.com/la5nta/pat/releases/download/v0.12.1/pat_0.12.1_linux_amd64.deb 
+    update_cache: yes
+  when: uname_machine.stdout == "x86_64"
+  notify: restart all pat
+- name: Update repositories cache and install "pat" package (arm / pi)
+  ansible.builtin.apt:
+    deb: https://github.com/la5nta/pat/releases/download/v0.12.1/pat_0.12.1_linux_armhf.deb
+    update_cache: yes
+  when: uname_machine.stdout is match("arm.*")
+  notify: restart all pat
+- name: mark pat as held
+  ansible.builtin.dpkg_selections:
+    name: pat
+    selection: hold
+- name: create pat user
+  ansible.builtin.user:
+    name: pat
+    groups:
+      - audio
+      - video
+      - netdev
+      - dialout
+- name: pat config directory
+  ansible.builtin.file:
+    path: /etc/pat
+    state: directory
+    owner: pat
+
+- name: pat service config dir
+  ansible.builtin.file:
+    path: /etc/systemd/system/pat@{{ item.axport }}.service.d
+    state: directory
+  loop: "{{ patports }}"
+
+- name: pat service config
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/pat@{{ item.axport }}.service.d/{{ item.axport }}.conf
+    content: |
+      [Service]
+      Environment="PAT_CONFIG=/etc/pat/config.{{ item.callsign }}.json"
+  loop: "{{ patports }}"
+  notify: 
+    - restart pat
+
+- name: copy templates
+  ansible.builtin.template:
+    src: templates/config.json.j2
+    dest: /etc/pat/config.{{ item.callsign }}.json
+    owner: root
+    group: root
+    mode: 0644
+  register: pat_templates
+  loop: "{{ patports }}"
+
+- name: pat service enabled
+  loop: "{{ pat_templates.results | map(attribute='item') | map(attribute='axport') | list }}"
+  ansible.builtin.systemd:
+    name: pat@{{ item }}
+    daemon_reload: yes
+    enabled: yes
+  notify: restart pat

@@ -1,0 +1,18 @@
+<sysops vcsRevision="$Revision: 157 $" vcsAuthor="$Author: eckertb $" vcsId="$Id: sysop-template.xml 157 2013-12-07 12:29:28Z eckertb $">
+  <sysop>
+    <Callsign>{{ sysop.callsign }}</Callsign>
+    <Password></Password>
+    <GridSquare>{{ sysop.grid }}</GridSquare>
+    <SysopName>{{ sysop.name }}Masen Furer</SysopName>
+    <StreetAddress1>{{ sysop.address1 }}</StreetAddress1>
+    <StreetAddress2>{{ sysop.address2 | d('') }}</StreetAddress2>
+    <City>{{ sysop.city }}</City>
+    <State>{{ sysop.state }}</State>
+    <Country>{{ sysop.country }}</Country>
+    <PostalCode>{{ sysop.zip }}</PostalCode>
+    <Email>{{ sysop.email }}</Email>
+    <Phones>{{ sysop.phone }}</Phones>
+    <Website>{{ sysop.website }}</Website>
+    <Comments>{{ sysop.comments }}</Comments>
+  </sysop>
+</sysops>

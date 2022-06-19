@@ -1,0 +1,20 @@
+# {{ ansible_managed }}
+{% for channel in item.channels %}
+ADEVICE{{ loop.index0 }}  {{ channel.adevice }}
+CHANNEL {{ channel.channel }}
+
+MYCALL {{ channel.mycall | d(item.callsign, true) }}
+MODEM {{ channel.modem }}
+{% if channel.ptt is defined %}
+PTT {{ channel.ptt }}
+{% endif %}
+
+{% if channel.agwport is defined %}
+AGWPORT {{ channel.agwport }}
+{% endif %}
+{% if channel.kissport is defined %}
+KISSPORT {{ channel.kissport }}
+{% endif %}
+
+
+{% endfor %}

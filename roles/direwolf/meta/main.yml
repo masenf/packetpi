@@ -1,0 +1,14 @@
+---
+dependencies:
+  - role: devoinc.systemd_service
+    systemd_restart_disabled: False
+    systemd_service:
+      direwolf@:
+        enabled: no
+        exec_start: "/usr/local/bin/direwolf -c /etc/direwolf/%i.conf"
+        exec_start_post: "/bin/sleep 5"
+        restart: "always"
+        restart_sec: "10s"
+        wanted_by: "multi-user.target"
+        wants: "socat@%i.service"
+        user: direwolf

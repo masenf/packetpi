@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rmschannels xmlns="http://www.namespace.org"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="file:///usr/local/etc/channels.xsd">
+  {% for channel in channels %}
+  <channel name="{{ channel.axport }}" type="ax25" active="yes">
+    <basecall>{{ channel.callsign }}</basecall>
+    <callsign>{{ channel.callsign }}-{{ channel.ssid }}</callsign>
+    <password>{{ channel.password }}</password>
+    <gridsquare>{{ channel.grid | d(grid, true) }}</gridsquare>
+    <frequency>{{ channel.frequency }}</frequency>
+    <mode>0</mode>
+    <autoonly>0</autoonly>
+    <baud>{{ channel.baud }}</baud>
+    <power>{{ channel.power }}</power>
+    <height>{{ channel.height }}</height>
+    <gain>{{ channel.gain }}</gain>
+    <direction>{{ channel.direction }}</direction>
+    <hours>24/7</hours>
+    <groupreference>1</groupreference>
+    <servicecode>{{ channel.servicecode | d('PUBLIC', true) }}</servicecode>
+    <statuschecker>
+      /usr/local/bin/rmschanstat $type $name $callsign
+    </statuschecker>
+  </channel>
+  {% endfor %}
+</rmschannels>

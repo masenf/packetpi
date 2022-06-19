@@ -1,5 +1,17 @@
 ---
 # tasks file for ax25
+- name: include direwolf role
+  ansible.builtin.include_role:
+    name: direwolf
+  vars:
+    instances:
+      - name: "{{ instance.name }}"
+        channels: "{{ instance.direwolf }}"
+        callsign: "{{ instance.callsign | d(callsign, true) }}"
+  loop: "{{ axports }}"
+  loop_control:
+    loop_var: instance
+  when: instance.direwolf is defined
 
 - name: set kiss module parameters
   ansible.builtin.copy:
@@ -14,19 +26,6 @@
     name: mkiss
     state: present
 
-- name: load netrom module
-  modprobe:
-    name: netrom
-    state: present
-      
-- name: load netrom module on boot
-  ansible.builtin.copy:
-    content: 'netrom'
-    dest: /etc/modules-load.d/netrom.conf
-    owner: root
-    group: root
-    mode: '0644'
-
 - name: load kiss module on boot
   ansible.builtin.copy:
     content: 'mkiss'
@@ -35,45 +34,163 @@
     group: root
     mode: '0644'
 
+- name: update apt package cache
+  ansible.builtin.apt:
+    update_cache: yes
+
 - name: install ax25 packages
   ansible.builtin.package:
     name:
       - ax25-apps
-      - ax25-node
       - ax25-tools
       - socat
-      - telnet
     state: present
 
-- name: configure services
-  lineinfile:
-    path: /etc/services
-    regexp: '^node.*software$'
-    insertafter: '^# Local services'
-    line: 'node            4444/tcp                        # OH2BNS node software'
-  notify:
-    - reload inetd
+- name: create ax25d.conf.d directory
+  ansible.builtin.file:
+    path: /etc/ax25/ax25d.conf.d
+    state: directory
+    mode: 0755
 
-- name: configure inetd
-  lineinfile:
-    path: /etc/inetd.conf
-    regexp: '^node.*node$'
-    insertafter: '^#:HAM-RADIO: amateur-radio services'
-    line: node stream tcp nowait root /usr/sbin/ax25-node ax25-node
-  notify:
-    - reload inetd
-
-- name: copy templates
+- name: copy axports
   ansible.builtin.template:
-    src: templates/{{ item }}.j2
-    dest: /etc/ax25/{{ item }}
+    src: templates/axports.j2
+    dest: /etc/ax25/axports
     owner: root
     group: root
     mode: 0644
-  loop:
-    - ax25d.conf
-    - axports
-    - node.conf
-    - node.perms
-    - nrbroadcast
-    - nrports
+  notify: reload ax25d
+
+- name: copy ax25d.conf header
+  ansible.builtin.template:
+    src: templates/ax25d.conf.j2
+    dest: /etc/ax25/ax25d.conf.d/00-header.conf
+    owner: root
+    group: root
+    mode: 0644
+  # always trigger config file assembly
+  changed_when: true
+  notify: assemble ax25d.conf
+
+# assemble the file as a task, in case a previous run died before the handlers
+# could execute
+- name: assemble ax25d.conf (task)
+  ansible.builtin.assemble:
+    src: /etc/ax25/ax25d.conf.d
+    dest: /etc/ax25/ax25d.conf
+  notify: reload ax25d
+
+- name: /dev/tnc directory
+  ansible.builtin.file:
+    path: /dev/tnc
+    state: directory
+
+- name: /dev/tnc kissattach path unit
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/kissattach@.path
+    src: kissattach@.path
+
+- name: remote tnc environment configuration directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/socat@{{ item.name }}.service.d
+    state: directory
+  loop: "{{ axports }}"
+  register: remote_tncs
+  when: item.kissport is defined or item.direwolf is defined
+
+- name: remote tnc environment configuration
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/socat@{{ item.name }}.service.d/{{ item.name }}.conf
+    content: |
+      [Service]
+      Environment="KISS_ADDRESS=TCP4:{{ item.kisshost | d('localhost', true) }}:{{ item.kissport }}"
+  loop: "{{ axports }}"
+  when: item.kissport is defined
+  notify:
+    - restart socat
+    - reload ax25d
+
+- name: remote tnc direwolf dependency
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/socat@{{ item.name }}.service.d/{{ item.name }}.conf
+    content: |
+      [Service]
+      Environment="KISS_ADDRESS=TCP4:localhost:{{ item.direwolf[0].kissport | d('8001', true) }}"
+
+      [Unit]
+      BindsTo=direwolf@{{ item.name }}.service
+      After=direwolf@{{ item.name }}.service
+  loop: "{{ axports }}"
+  when: item.direwolf is defined
+  notify:
+    - restart socat
+    - reload ax25d
+
+- name: local tnc environment configuration directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/tnc_link@{{ item.name }}.service.d
+    state: directory
+  loop: "{{ axports }}"
+  when: item.serialPort is defined
+
+- name: local tnc environment configuration
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/tnc_link@{{ item.name }}.service.d/{{ item.name }}.conf
+    content: |
+      [Service]
+      Environment="SERIAL_PORT={{ item.serialPort }}"
+  loop: "{{ axports }}"
+  when: item.serialPort is defined
+  register: local_tncs
+  notify:
+    - restart tnc_link
+    - reload ax25d
+
+- name: dump direwolf port info
+  ansible.builtin.debug:
+    msg: "name: {{ item.name }} channels: {{ item.direwolf }}"
+  loop: "{{ axports }}"
+  when: item.direwolf is defined
+
+- name: include netrom role
+  ansible.builtin.include_role:
+    name: netrom
+  vars:
+    nrports:
+      - "{{ instance.netrom | combine( { 'axport': instance.name } ) }}"
+  loop: "{{ axports }}"
+  loop_control:
+    loop_var: instance
+  when: instance.netrom is defined
+
+- name: enable remote tnc socat service
+  ansible.builtin.systemd:
+    name: socat@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+  loop: "{{ remote_tncs.results | map(attribute='item') | list }}"
+  when: item.kissport is defined or item.direwolf is defined
+  notify: restart socat
+
+- name: enable local tnc link service
+  ansible.builtin.systemd:
+    name: tnc_link@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+  loop: "{{ local_tncs.results | map(attribute='item') | list }}"
+  when: item.serialPort is defined
+  notify: restart tnc_link
+
+- name: enable kissattach for all ports
+  ansible.builtin.systemd:
+    name: kissattach@{{ item.name }}
+    daemon_reload: yes
+    enabled: yes
+  loop: "{{ axports }}"
+  notify: reload ax25d
+
+- name: enable ax25d
+  ansible.builtin.systemd:
+    name: ax25d
+    daemon_reload: yes
+    enabled: yes
