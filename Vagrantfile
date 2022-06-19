@@ -14,7 +14,6 @@ Vagrant.configure('2') do |config|
     machine.vm.network :private_network, ip: '192.168.56.11'
     machine.vm.hostname = 'cimon-ansible.local'
     machine.vm.synced_folder ".", "/ansible"
-    machine.vm.synced_folder "/Users/masen/code/python-aprs", "/python-aprs"
 
     machine.vm.provision 'ansible' do |ansible|
       ansible.playbook = 'tests/playbook.yml'
