@@ -146,6 +146,24 @@
     - restart tnc_link
     - reload ax25d
 
+- name: kissattach service config dir
+  ansible.builtin.file:
+    path: /etc/systemd/system/kissattach@{{ item.name }}.service.d
+    state: directory
+  loop: "{{ axports }}"
+
+- name: kissattach service configuration
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/kissattach@{{ item.name }}.service.d/{{ item.name }}.conf
+    # cause kissattach to restart when socat restarts
+    content: |
+      [Unit]
+      BindsTo=socat@{{ item.name }}.service
+      After=socat@{{ item.name }}.service
+  loop: "{{ axports }}"
+  notify:
+    - reload ax25d
+
 - name: dump direwolf port info
   ansible.builtin.debug:
     msg: "name: {{ item.name }} channels: {{ item.direwolf }}"
