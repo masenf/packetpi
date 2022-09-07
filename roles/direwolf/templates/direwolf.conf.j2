@@ -16,5 +16,13 @@ AGWPORT {{ channel.agwport }}
 KISSPORT {{ channel.kissport }}
 {% endif %}
 
+{% if channel.txdelay is defined %}
+TXDELAY {{ channel.txdelay }}
+{% endif %}
+{% if channel.txtail is defined %}
+TXTAIL {{ channel.txtail }}
+{% endif %}
+
+
 
 {% endfor %}
