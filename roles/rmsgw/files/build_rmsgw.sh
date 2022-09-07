@@ -7,3 +7,4 @@ cd /opt/rmsgw
 ./configure
 make -j4
 make install
+git reset --hard

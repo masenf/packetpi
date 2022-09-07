@@ -17,6 +17,7 @@
     repo: 'https://github.com/nwdigitalradio/rmsgw'
     dest: /opt/rmsgw
     version: master
+    force: yes
   notify: build rmsgw package
 - name: create rmsgw group
   ansible.builtin.group:
